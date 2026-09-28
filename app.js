@@ -11,7 +11,7 @@ const supabase = isConfigured ? createClient(cfg.SUPABASE_URL, cfg.SUPABASE_ANON
     storage: window.localStorage
   }
 }) : null;
-const TBY_SITE_URL = 'https://tranminhnhan4547-eng.github.io/tby-badminton/';
+const TBY_SITE_URL = 'https://teamtby-badminton.github.io/tby-badminton/';
 
 function updateOwnerPasswordVisibility(){
   const sec=document.getElementById('ownerPasswordSection');

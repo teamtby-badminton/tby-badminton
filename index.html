@@ -232,8 +232,8 @@
         </section>
 
         <section id="siteSettingsSection" class="admin-manage-section" hidden>
-          <div class="admin-manage-head"><div><span class="kicker">OWNER</span><h3>Giao diện & nội dung website</h3></div></div>
-          <p class="muted admin-note">Chỉ Owner chỉnh phần này. Khách chỉ đọc nội quy, không cần tick xác nhận khi đăng ký.</p>
+          <div class="admin-manage-head"><div><span class="kicker">OWNER / ADMIN</span><h3>Giao diện & nội dung website</h3></div></div>
+          <p class="muted admin-note">Owner và Admin đều có thể chỉnh. Media quảng bá sẽ nằm bên phải ảnh kèo; có thể bật/tắt bất cứ lúc nào.</p>
           <form id="siteSettingsForm" class="form-grid admin-form">
             <label class="full">Tiêu đề bìa<input id="sHeroTitle" maxlength="120" /></label>
             <label class="full">Mô tả bìa<textarea id="sHeroSubtitle" rows="3" maxlength="300"></textarea></label>
@@ -241,6 +241,16 @@
             <label>Logo TBY<input id="sLogoFile" type="file" accept="image/*"/></label>
             <label>Ảnh bìa<input id="sHeroFile" type="file" accept="image/*"/></label>
             <label class="full">Ảnh nền trang<input id="sBackgroundFile" type="file" accept="image/*"/></label>
+            <div class="full promo-admin-box">
+              <strong>Ảnh / video bên phải ảnh kèo</strong>
+              <label class="check"><input id="sPromoEnabled" type="checkbox"/> Hiện ảnh/video</label>
+              <label>Loại media<select id="sPromoType"><option value="image">Ảnh</option><option value="video">Video ngắn</option></select></label>
+              <label>Chọn ảnh hoặc video<input id="sPromoFile" type="file" accept="image/*,video/mp4,video/webm"/><small>Khuyên dùng ảnh/video ngang. Video tự chạy, tắt tiếng và lặp lại; tối đa 25MB.</small></label>
+              <small id="promoCurrent" class="muted"></small>
+              <label class="check"><input id="sPromoRemove" type="checkbox"/> Xóa media hiện tại</label>
+              <label class="check"><input id="sPromoSloganEnabled" type="checkbox"/> Hiện chữ khi không dùng media</label>
+              <label class="full">Chữ thay thế<textarea id="sPromoSlogan" rows="4" placeholder="Good\nPlayers\nBetter\nFriends"></textarea><small>Mỗi dòng là một dòng chữ, tối đa 4 dòng.</small></label>
+            </div>
             <label>TikTok<input id="sTikTok" type="url" placeholder="https://www.tiktok.com/@..."/></label>
             <label>YouTube<input id="sYouTube" type="url" placeholder="https://www.youtube.com/@..."/></label>
             <label>Facebook<input id="sFacebook" type="url" placeholder="https://facebook.com/..."/></label>

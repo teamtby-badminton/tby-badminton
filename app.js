@@ -29,7 +29,7 @@ const fallbackSettings={
   hero_title:'Chơi hết mình.\nKết nối bền lâu.',
   hero_subtitle:'Đăng ký slot vãng lai nhanh, xem chỗ trống theo thời gian thực và nhận thông tin kèo ngay trên điện thoại.',
   rules_text:'Đi đúng giờ, có mặt sớm để khởi động.\nNếu bận, báo hủy sớm để nhường slot.\nChọn đúng trình để ghép trận cân bằng.\nChơi fair-play, tôn trọng đồng đội và đối thủ.',
-  logo_url:'',hero_image_url:'',background_image_url:'',tiktok_url:'',youtube_url:'',facebook_url:'',zalo_url:'',host_contact:''
+  logo_url:'',hero_image_url:'',background_image_url:'',tiktok_url:'',youtube_url:'',facebook_url:'',zalo_url:'',host_contact:'',promo_media_url:'',promo_media_type:'image',promo_media_enabled:false,promo_slogan:'Good\nPlayers\nBetter\nFriends',promo_slogan_enabled:true
 };
 
 function mapsUrl(value){
@@ -62,6 +62,20 @@ function applySettings(s){
   $('#rulesList').innerHTML=(rules.length?rules:['Nội quy đang được cập nhật.']).map((r,i)=>`<article><b>${String(i+1).padStart(2,'0')}</b><p>${esc(r)}</p></article>`).join('');
   const links=[['TikTok',s.tiktok_url,'tiktok'],['YouTube',s.youtube_url,'youtube'],['Facebook',s.facebook_url,'facebook'],['Zalo',s.zalo_url,'zalo']].filter(x=>x[1]);
   $('#socialLinks').innerHTML=links.length?links.map(([name,url,key])=>`<a data-social="${key}" href="${esc(url)}" target="_blank" rel="noopener noreferrer">${name}</a>`).join(''):'<span class="muted">Các kênh mạng xã hội đang cập nhật.</span>';
+}
+
+function promoOverlayHtml(){
+  const s=currentSettings||fallbackSettings;
+  if(s.promo_media_enabled && s.promo_media_url){
+    const url=esc(s.promo_media_url);
+    if(s.promo_media_type==='video') return `<div class="event-promo-media"><video src="${url}" autoplay muted loop playsinline preload="metadata"></video></div>`;
+    return `<div class="event-promo-media"><img src="${url}" alt="TBY banner"></div>`;
+  }
+  if(s.promo_slogan_enabled!==false){
+    const lines=String(s.promo_slogan||fallbackSettings.promo_slogan).split(/\r?\n/).map(x=>x.trim()).filter(Boolean).slice(0,4);
+    return `<div class="event-slogan" aria-hidden="true">${lines.map((x,i)=>`<div class="event-slogan-line ${['one','two','three','four'][i]||''}">${esc(x)}</div>`).join('')}<div class="event-slogan-stroke"></div></div>`;
+  }
+  return '';
 }
 
 async function loadEvents(){
@@ -114,13 +128,7 @@ function eventCard(e){
         <div class="date">${esc(e.event_date.slice(8,10))}/${esc(e.event_date.slice(5,7))}</div>
         <div class="year">${esc(e.event_date.slice(0,4))}</div>
       </div>
-      <div class="event-slogan" aria-hidden="true">
-        <div class="event-slogan-line one">Good</div>
-        <div class="event-slogan-line two">Players</div>
-        <div class="event-slogan-line three">Better</div>
-        <div class="event-slogan-line four">Friends</div>
-        <div class="event-slogan-stroke"></div>
-      </div>
+      ${promoOverlayHtml()}
     </div>
 
     <div class="event-body">
@@ -268,8 +276,11 @@ async function syncAuth(){
   $('#eOpen').disabled=currentAdminRole!=='owner';$('#eOpenHint').textContent=currentAdminRole==='owner'?'(Bạn có quyền đóng/mở đăng ký)':'(Chỉ Owner được đóng/mở đăng ký)';
   if(currentAdminRole==='owner'){
     $('#ownerSection').hidden=false;
+    await loadOwnerAccess();
+  }
+  if(currentAdminRole==='owner'||currentAdminRole==='admin'){
     $('#siteSettingsSection').hidden=false;
-    await Promise.all([loadOwnerAccess(),populateSettingsForm()]);
+    await populateSettingsForm();
   }
   if(currentAdminRole==='owner'||currentAdminRole==='admin'){
     $('#videoAdminSection').hidden=false;
@@ -801,8 +812,8 @@ async function deleteTeamVideo(id,url,type='upload'){
   await Promise.all([loadTeamVideos(),loadAdminVideos()]);
 }
 
-async function populateSettingsForm(){await loadSiteSettings();const s=currentSettings||fallbackSettings;$('#sHeroTitle').value=s.hero_title||'';$('#sHeroSubtitle').value=s.hero_subtitle||'';$('#sRules').value=s.rules_text||'';$('#sTikTok').value=s.tiktok_url||'';$('#sYouTube').value=s.youtube_url||'';$('#sFacebook').value=s.facebook_url||'';$('#sZalo').value=s.zalo_url||'';$('#sHostContact').value=s.host_contact||'';}
-$('#siteSettingsForm').addEventListener('submit',async ev=>{ev.preventDefault();if(currentAdminRole!=='owner')return alert('Chỉ Owner được chỉnh giao diện website.');const m=$('#siteSettingsMsg');m.textContent='Đang lưu…';m.className='form-msg';try{let s={...(currentSettings||fallbackSettings),hero_title:$('#sHeroTitle').value.trim(),hero_subtitle:$('#sHeroSubtitle').value.trim(),rules_text:$('#sRules').value.trim(),tiktok_url:$('#sTikTok').value.trim(),youtube_url:$('#sYouTube').value.trim(),facebook_url:$('#sFacebook').value.trim(),zalo_url:$('#sZalo').value.trim(),host_contact:$('#sHostContact').value.trim()};const files=[['sLogoFile','logo_url','site/logo'],['sHeroFile','hero_image_url','site/hero'],['sBackgroundFile','background_image_url','site/background']];for(const [input,key,path] of files){const f=$(`#${input}`).files[0];if(f){if(s[key])await removeMediaUrl(s[key]);s[key]=await uploadMedia(f,`${path}-${Date.now()}`);}}const {error}=await supabase.from('site_settings').upsert({id:1,...s,updated_at:new Date().toISOString()});if(error)throw error;m.className='form-msg ok';m.textContent='Đã cập nhật website.';currentSettings=s;applySettings(s);ev.target.querySelectorAll('input[type=file]').forEach(x=>x.value='');}catch(err){m.className='form-msg err';m.textContent=err.message||String(err);}});
+async function populateSettingsForm(){await loadSiteSettings();const s=currentSettings||fallbackSettings;$('#sHeroTitle').value=s.hero_title||'';$('#sHeroSubtitle').value=s.hero_subtitle||'';$('#sRules').value=s.rules_text||'';$('#sTikTok').value=s.tiktok_url||'';$('#sYouTube').value=s.youtube_url||'';$('#sFacebook').value=s.facebook_url||'';$('#sZalo').value=s.zalo_url||'';$('#sHostContact').value=s.host_contact||'';$('#sPromoEnabled').checked=!!s.promo_media_enabled;$('#sPromoType').value=s.promo_media_type||'image';$('#sPromoSlogan').value=s.promo_slogan||fallbackSettings.promo_slogan;$('#sPromoSloganEnabled').checked=s.promo_slogan_enabled!==false;$('#promoCurrent').textContent=s.promo_media_url?'Đang có media: '+s.promo_media_url.split('/').pop():'Chưa có ảnh/video.';}
+$('#siteSettingsForm').addEventListener('submit',async ev=>{ev.preventDefault();if(!['owner','admin'].includes(currentAdminRole))return alert('Chỉ Owner/Admin được chỉnh giao diện website.');const m=$('#siteSettingsMsg');m.textContent='Đang lưu…';m.className='form-msg';try{let s={...(currentSettings||fallbackSettings),hero_title:$('#sHeroTitle').value.trim(),hero_subtitle:$('#sHeroSubtitle').value.trim(),rules_text:$('#sRules').value.trim(),tiktok_url:$('#sTikTok').value.trim(),youtube_url:$('#sYouTube').value.trim(),facebook_url:$('#sFacebook').value.trim(),zalo_url:$('#sZalo').value.trim(),host_contact:$('#sHostContact').value.trim(),promo_media_enabled:$('#sPromoEnabled').checked,promo_media_type:$('#sPromoType').value,promo_slogan:$('#sPromoSlogan').value.trim(),promo_slogan_enabled:$('#sPromoSloganEnabled').checked};const files=[['sLogoFile','logo_url','site/logo'],['sHeroFile','hero_image_url','site/hero'],['sBackgroundFile','background_image_url','site/background']];for(const [input,key,path] of files){const f=$(`#${input}`).files[0];if(f){if(s[key])await removeMediaUrl(s[key]);s[key]=await uploadMedia(f,`${path}-${Date.now()}`);}}const promo=$('#sPromoFile').files[0];if(promo){const isVideo=promo.type.startsWith('video/');if(!isVideo&&!promo.type.startsWith('image/'))throw new Error('Chỉ nhận file ảnh hoặc video.');if(isVideo&&promo.size>25*1024*1024)throw new Error('Video tối đa 25MB.');if(s.promo_media_url)await removeMediaUrl(s.promo_media_url);s.promo_media_type=isVideo?'video':'image';s.promo_media_url=await uploadMedia(promo,`site/promo-${Date.now()}`);}if($('#sPromoRemove').checked&&s.promo_media_url){await removeMediaUrl(s.promo_media_url);s.promo_media_url='';s.promo_media_enabled=false;}const {error}=await supabase.rpc('admin_update_site_settings',{p_settings:s});if(error)throw error;m.className='form-msg ok';m.textContent='Đã cập nhật website.';currentSettings=s;applySettings(s);ev.target.querySelectorAll('input[type=file]').forEach(x=>x.value='');$('#sPromoRemove').checked=false;await loadEvents();}catch(err){m.className='form-msg err';m.textContent=err.message||String(err);}});
 
 await recoverMobileAuthSession();
 await Promise.all([loadSiteSettings(),loadEvents(),loadTeamVideos()]);

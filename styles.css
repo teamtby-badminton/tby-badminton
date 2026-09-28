@@ -1013,9 +1013,8 @@
   .video-edit-actions .btn{width:100%}
 }
 
-/* Owner/Admin promo media on event hero */
-.event-promo-media{position:absolute;right:18px;bottom:16px;z-index:3;width:min(32%,320px);aspect-ratio:16/9;border-radius:14px;overflow:hidden;box-shadow:0 10px 28px rgba(0,0,0,.28);background:#082f50;border:1px solid rgba(255,255,255,.35)}
-.event-promo-media img,.event-promo-media video{width:100%;height:100%;display:block;object-fit:cover}
-.promo-admin-box{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:14px;border:1px solid var(--line);border-radius:14px;background:#f8fbfe}
-.promo-admin-box>strong,.promo-admin-box>.full,.promo-admin-box>#promoCurrent{grid-column:1/-1}
-@media(max-width:640px){.event-promo-media{right:10px;bottom:10px;width:42%;border-radius:10px}.promo-admin-box{grid-template-columns:1fr}.promo-admin-box>*{grid-column:1!important}}
+/* Per-event image/video + slogan */
+.event-video{background:#071f35}
+.event-slogan-custom{font-size:32px;line-height:.95;max-width:170px;white-space:normal;text-wrap:balance;text-shadow:0 2px 3px rgba(0,0,0,.72),0 0 12px rgba(0,0,0,.35)}
+.image-preview{aspect-ratio:16/9;height:auto!important;background:#071f35}
+@media(max-width:860px){.event-slogan-custom{font-size:22px;max-width:125px}}

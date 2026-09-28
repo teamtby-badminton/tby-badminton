@@ -29,7 +29,7 @@ const fallbackSettings={
   hero_title:'Chơi hết mình.\nKết nối bền lâu.',
   hero_subtitle:'Đăng ký slot vãng lai nhanh, xem chỗ trống theo thời gian thực và nhận thông tin kèo ngay trên điện thoại.',
   rules_text:'Đi đúng giờ, có mặt sớm để khởi động.\nNếu bận, báo hủy sớm để nhường slot.\nChọn đúng trình để ghép trận cân bằng.\nChơi fair-play, tôn trọng đồng đội và đối thủ.',
-  logo_url:'',hero_image_url:'',background_image_url:'',tiktok_url:'',youtube_url:'',facebook_url:'',zalo_url:'',host_contact:'',promo_media_url:'',promo_media_type:'image',promo_media_enabled:false,promo_slogan:'Good\nPlayers\nBetter\nFriends',promo_slogan_enabled:true
+  logo_url:'',hero_image_url:'',background_image_url:'',tiktok_url:'',youtube_url:'',facebook_url:'',zalo_url:'',host_contact:''
 };
 
 function mapsUrl(value){
@@ -62,20 +62,6 @@ function applySettings(s){
   $('#rulesList').innerHTML=(rules.length?rules:['Nội quy đang được cập nhật.']).map((r,i)=>`<article><b>${String(i+1).padStart(2,'0')}</b><p>${esc(r)}</p></article>`).join('');
   const links=[['TikTok',s.tiktok_url,'tiktok'],['YouTube',s.youtube_url,'youtube'],['Facebook',s.facebook_url,'facebook'],['Zalo',s.zalo_url,'zalo']].filter(x=>x[1]);
   $('#socialLinks').innerHTML=links.length?links.map(([name,url,key])=>`<a data-social="${key}" href="${esc(url)}" target="_blank" rel="noopener noreferrer">${name}</a>`).join(''):'<span class="muted">Các kênh mạng xã hội đang cập nhật.</span>';
-}
-
-function promoOverlayHtml(){
-  const s=currentSettings||fallbackSettings;
-  if(s.promo_media_enabled && s.promo_media_url){
-    const url=esc(s.promo_media_url);
-    if(s.promo_media_type==='video') return `<div class="event-promo-media"><video src="${url}" autoplay muted loop playsinline preload="metadata"></video></div>`;
-    return `<div class="event-promo-media"><img src="${url}" alt="TBY banner"></div>`;
-  }
-  if(s.promo_slogan_enabled!==false){
-    const lines=String(s.promo_slogan||fallbackSettings.promo_slogan).split(/\r?\n/).map(x=>x.trim()).filter(Boolean).slice(0,4);
-    return `<div class="event-slogan" aria-hidden="true">${lines.map((x,i)=>`<div class="event-slogan-line ${['one','two','three','four'][i]||''}">${esc(x)}</div>`).join('')}<div class="event-slogan-stroke"></div></div>`;
-  }
-  return '';
 }
 
 async function loadEvents(){
@@ -117,8 +103,10 @@ function eventCard(e){
   const dayText=dateParts[0]||'';
   const venueAddress=e.venue_address?`<small class="venue-address">${esc(e.venue_address)}</small>`:'';
   const heroImage=e.image_url
-    ? `<img class="event-image" src="${esc(e.image_url)}" alt="Ảnh ${esc(e.title)}">`
+    ? (e.media_type==='video' ? `<video class="event-image event-video" src="${esc(e.image_url)}" autoplay muted loop playsinline preload="metadata"></video>` : `<img class="event-image" src="${esc(e.image_url)}" alt="Ảnh ${esc(e.title)}">`)
     : `<div class="event-image event-image-placeholder"></div>`;
+  const sloganText=(e.slogan_text||'Good Players Better Friends').trim();
+  const sloganHtml=e.slogan_visible!==false && sloganText ? `<div class="event-slogan" aria-hidden="true"><div class="event-slogan-custom">${esc(sloganText)}</div><div class="event-slogan-stroke"></div></div>` : '';
 
   return `<article class="event-card ${cancelled?'event-cancelled':''}">
     <div class="event-hero">
@@ -128,7 +116,7 @@ function eventCard(e){
         <div class="date">${esc(e.event_date.slice(8,10))}/${esc(e.event_date.slice(5,7))}</div>
         <div class="year">${esc(e.event_date.slice(0,4))}</div>
       </div>
-      ${promoOverlayHtml()}
+      ${sloganHtml}
     </div>
 
     <div class="event-body">
@@ -276,11 +264,8 @@ async function syncAuth(){
   $('#eOpen').disabled=currentAdminRole!=='owner';$('#eOpenHint').textContent=currentAdminRole==='owner'?'(Bạn có quyền đóng/mở đăng ký)':'(Chỉ Owner được đóng/mở đăng ký)';
   if(currentAdminRole==='owner'){
     $('#ownerSection').hidden=false;
-    await loadOwnerAccess();
-  }
-  if(currentAdminRole==='owner'||currentAdminRole==='admin'){
     $('#siteSettingsSection').hidden=false;
-    await populateSettingsForm();
+    await Promise.all([loadOwnerAccess(),populateSettingsForm()]);
   }
   if(currentAdminRole==='owner'||currentAdminRole==='admin'){
     $('#videoAdminSection').hidden=false;
@@ -426,11 +411,11 @@ async function recoverMobileAuthSession(){
 }
 
 function resetEventForm(){
-  $('#eventForm').reset();$('#editingEventId').value='';$('#eVenueAddress').value='';$('#eGoogleMapsUrl').value='';$('#eCourtNumber').value='';$('#eLevel').value='Yếu+ → TB-';$('#eTotal').value=10;$('#eMaleFee').value=65;$('#eFemaleFee').value=55;$('#eOpen').checked=true;$('#eventFormHeading').textContent='Tạo kèo mới';$('#saveEventBtn').textContent='Tạo kèo';$('#cancelEditBtn').hidden=true;$('#eventImagePreview').hidden=true;$('#removeEventImageBtn').hidden=true;$('#eImageFile').value='';pendingRemoveEventImage=false;$('#eOpen').disabled=currentAdminRole!=='owner';
+  $('#eventForm').reset();$('#editingEventId').value='';$('#eVenueAddress').value='';$('#eGoogleMapsUrl').value='';$('#eCourtNumber').value='';$('#eLevel').value='Yếu+ → TB-';$('#eTotal').value=10;$('#eMaleFee').value=65;$('#eFemaleFee').value=55;$('#eOpen').checked=true;$('#eventFormHeading').textContent='Tạo kèo mới';$('#saveEventBtn').textContent='Tạo kèo';$('#cancelEditBtn').hidden=true;$('#eventImagePreview').hidden=true;$('#eventVideoPreview').hidden=true;$('#eventVideoPreview').removeAttribute('src');$('#removeEventImageBtn').hidden=true;$('#eImageFile').value='';$('#eSloganText').value='Good Players Better Friends';$('#eSloganVisible').checked=true;pendingRemoveEventImage=false;$('#eOpen').disabled=currentAdminRole!=='owner';
 }
 $('#cancelEditBtn').addEventListener('click',resetEventForm);
-$('#eImageFile').addEventListener('change',()=>{const f=$('#eImageFile').files[0];if(!f)return;$('#eventImagePreview').src=URL.createObjectURL(f);$('#eventImagePreview').hidden=false;$('#removeEventImageBtn').hidden=false;pendingRemoveEventImage=false;});
-$('#removeEventImageBtn').addEventListener('click',()=>{$('#eImageFile').value='';$('#eventImagePreview').hidden=true;$('#removeEventImageBtn').hidden=true;pendingRemoveEventImage=true;});
+$('#eImageFile').addEventListener('change',()=>{const f=$('#eImageFile').files[0];if(!f)return;const u=URL.createObjectURL(f);const isVideo=f.type.startsWith('video/');$('#eventImagePreview').hidden=isVideo;$('#eventVideoPreview').hidden=!isVideo;if(isVideo){$('#eventVideoPreview').src=u;$('#eventVideoPreview').play().catch(()=>{});}else{$('#eventImagePreview').src=u;}$('#removeEventImageBtn').hidden=false;pendingRemoveEventImage=false;});
+$('#removeEventImageBtn').addEventListener('click',()=>{$('#eImageFile').value='';$('#eventImagePreview').hidden=true;$('#eventVideoPreview').hidden=true;$('#eventVideoPreview').removeAttribute('src');$('#removeEventImageBtn').hidden=true;pendingRemoveEventImage=true;});
 
 async function uploadMedia(file,path){
   if(!file)return null;const ext=(file.name.split('.').pop()||'jpg').toLowerCase();const finalPath=`${path}.${ext}`;
@@ -447,7 +432,7 @@ $('#eventForm').addEventListener('submit',async ev=>{
   if(rawMapsUrl&&!mapsUrl(rawMapsUrl)){
     $('#adminMsg').className='form-msg err';$('#adminMsg').textContent='Link Google Maps phải là URL đầy đủ bắt đầu bằng https:// hoặc http://.';return;
   }
-  const totalSlots=Math.max(1,+$('#eTotal').value||1);const p={title:$('#eTitle').value.trim(),venue:$('#eVenue').value.trim(),venue_address:$('#eVenueAddress').value.trim(),google_maps_url:rawMapsUrl||null,event_date:$('#eDate').value,start_time:$('#eStart').value,end_time:$('#eEnd').value,level_range:$('#eLevel').value.trim(),total_slots:totalSlots,male_fee:+$('#eMaleFee').value||0,female_fee:+$('#eFemaleFee').value||0};if(currentAdminRole==='owner')p.is_open=$('#eOpen').checked;
+  const totalSlots=Math.max(1,+$('#eTotal').value||1);const p={title:$('#eTitle').value.trim(),venue:$('#eVenue').value.trim(),venue_address:$('#eVenueAddress').value.trim(),google_maps_url:rawMapsUrl||null,event_date:$('#eDate').value,start_time:$('#eStart').value,end_time:$('#eEnd').value,level_range:$('#eLevel').value.trim(),total_slots:totalSlots,male_fee:+$('#eMaleFee').value||0,female_fee:+$('#eFemaleFee').value||0,slogan_text:$('#eSloganText').value.trim()||null,slogan_visible:$('#eSloganVisible').checked};if(currentAdminRole==='owner')p.is_open=$('#eOpen').checked;
   const m=$('#adminMsg');m.textContent='Đang lưu…';m.className='form-msg';
   try{
     let eventId=id;
@@ -455,7 +440,7 @@ $('#eventForm').addEventListener('submit',async ev=>{
     const {error:courtErr}=await supabase.rpc('admin_set_event_court',{p_event_id:eventId,p_court_number:$('#eCourtNumber').value.trim()||null});
     if(courtErr)throw courtErr;
     if(pendingRemoveEventImage&&old?.image_url){await removeMediaUrl(old.image_url);const {error}=await supabase.from('events').update({image_url:null}).eq('id',eventId);if(error)throw error;}
-    const file=$('#eImageFile').files[0];if(file){if(old?.image_url)await removeMediaUrl(old.image_url);const url=await uploadMedia(file,`events/${eventId}-${Date.now()}`);const {error}=await supabase.from('events').update({image_url:url}).eq('id',eventId);if(error)throw error;}
+    const file=$('#eImageFile').files[0];if(file){if(file.size>50*1024*1024)throw new Error('Ảnh/video vượt quá 50 MB.');if(old?.image_url)await removeMediaUrl(old.image_url);const url=await uploadMedia(file,`events/${eventId}-${Date.now()}`);const mediaType=file.type.startsWith('video/')?'video':'image';const {error}=await supabase.from('events').update({image_url:url,media_type:mediaType}).eq('id',eventId);if(error)throw error;}else if(pendingRemoveEventImage){const {error}=await supabase.from('events').update({media_type:'image'}).eq('id',eventId);if(error)throw error;}
     m.className='form-msg ok';m.textContent=id?'Đã cập nhật kèo.':'Tạo kèo thành công.';resetEventForm();await Promise.all([loadEvents(),loadAdminEvents()]);
   }catch(err){m.className='form-msg err';m.textContent=err.message||String(err);}
 });
@@ -488,8 +473,8 @@ function adminEventCard(e){
 function editEvent(id){
   if(!['owner','admin'].includes(currentAdminRole))return;
   const e=currentAdminEvents.find(x=>x.id===id);if(!e)return;
-  $('#editingEventId').value=e.id;$('#eTitle').value=e.title;$('#eVenue').value=e.venue;$('#eVenueAddress').value=e.venue_address||'';$('#eGoogleMapsUrl').value=e.google_maps_url||'';$('#eCourtNumber').value='';$('#eDate').value=e.event_date;$('#eStart').value=e.start_time.slice(0,5);$('#eEnd').value=e.end_time.slice(0,5);$('#eLevel').value=e.level_range;$('#eTotal').value=e.total_slots||10;$('#eMaleFee').value=e.male_fee||0;$('#eFemaleFee').value=e.female_fee||0;$('#eOpen').checked=!!e.is_open;$('#eOpen').disabled=currentAdminRole!=='owner';$('#eImageFile').value='';pendingRemoveEventImage=false;$('#eventFormHeading').textContent='Sửa kèo';$('#saveEventBtn').textContent='Lưu thay đổi';$('#cancelEditBtn').hidden=false;
-  if(e.image_url){$('#eventImagePreview').src=e.image_url;$('#eventImagePreview').hidden=false;$('#removeEventImageBtn').hidden=false;}else{$('#eventImagePreview').hidden=true;$('#removeEventImageBtn').hidden=true;}
+  $('#editingEventId').value=e.id;$('#eTitle').value=e.title;$('#eVenue').value=e.venue;$('#eVenueAddress').value=e.venue_address||'';$('#eGoogleMapsUrl').value=e.google_maps_url||'';$('#eCourtNumber').value='';$('#eDate').value=e.event_date;$('#eStart').value=e.start_time.slice(0,5);$('#eEnd').value=e.end_time.slice(0,5);$('#eLevel').value=e.level_range;$('#eTotal').value=e.total_slots||10;$('#eMaleFee').value=e.male_fee||0;$('#eFemaleFee').value=e.female_fee||0;$('#eOpen').checked=!!e.is_open;$('#eOpen').disabled=currentAdminRole!=='owner';$('#eImageFile').value='';$('#eSloganText').value=e.slogan_text||'Good Players Better Friends';$('#eSloganVisible').checked=e.slogan_visible!==false;pendingRemoveEventImage=false;$('#eventFormHeading').textContent='Sửa kèo';$('#saveEventBtn').textContent='Lưu thay đổi';$('#cancelEditBtn').hidden=false;
+  if(e.image_url){const isVideo=e.media_type==='video';$('#eventImagePreview').hidden=isVideo;$('#eventVideoPreview').hidden=!isVideo;if(isVideo){$('#eventVideoPreview').src=e.image_url;}else{$('#eventImagePreview').src=e.image_url;}$('#removeEventImageBtn').hidden=false;}else{$('#eventImagePreview').hidden=true;$('#eventVideoPreview').hidden=true;$('#eventVideoPreview').removeAttribute('src');$('#removeEventImageBtn').hidden=true;}
   supabase.rpc('admin_get_event_court',{p_event_id:e.id}).then(({data,error})=>{
     if(!error&&data!==null&&data!==undefined)$('#eCourtNumber').value=typeof data==='string'?data:(data.court_number||'');
   });
@@ -812,8 +797,8 @@ async function deleteTeamVideo(id,url,type='upload'){
   await Promise.all([loadTeamVideos(),loadAdminVideos()]);
 }
 
-async function populateSettingsForm(){await loadSiteSettings();const s=currentSettings||fallbackSettings;$('#sHeroTitle').value=s.hero_title||'';$('#sHeroSubtitle').value=s.hero_subtitle||'';$('#sRules').value=s.rules_text||'';$('#sTikTok').value=s.tiktok_url||'';$('#sYouTube').value=s.youtube_url||'';$('#sFacebook').value=s.facebook_url||'';$('#sZalo').value=s.zalo_url||'';$('#sHostContact').value=s.host_contact||'';$('#sPromoEnabled').checked=!!s.promo_media_enabled;$('#sPromoType').value=s.promo_media_type||'image';$('#sPromoSlogan').value=s.promo_slogan||fallbackSettings.promo_slogan;$('#sPromoSloganEnabled').checked=s.promo_slogan_enabled!==false;$('#promoCurrent').textContent=s.promo_media_url?'Đang có media: '+s.promo_media_url.split('/').pop():'Chưa có ảnh/video.';}
-$('#siteSettingsForm').addEventListener('submit',async ev=>{ev.preventDefault();if(!['owner','admin'].includes(currentAdminRole))return alert('Chỉ Owner/Admin được chỉnh giao diện website.');const m=$('#siteSettingsMsg');m.textContent='Đang lưu…';m.className='form-msg';try{let s={...(currentSettings||fallbackSettings),hero_title:$('#sHeroTitle').value.trim(),hero_subtitle:$('#sHeroSubtitle').value.trim(),rules_text:$('#sRules').value.trim(),tiktok_url:$('#sTikTok').value.trim(),youtube_url:$('#sYouTube').value.trim(),facebook_url:$('#sFacebook').value.trim(),zalo_url:$('#sZalo').value.trim(),host_contact:$('#sHostContact').value.trim(),promo_media_enabled:$('#sPromoEnabled').checked,promo_media_type:$('#sPromoType').value,promo_slogan:$('#sPromoSlogan').value.trim(),promo_slogan_enabled:$('#sPromoSloganEnabled').checked};const files=[['sLogoFile','logo_url','site/logo'],['sHeroFile','hero_image_url','site/hero'],['sBackgroundFile','background_image_url','site/background']];for(const [input,key,path] of files){const f=$(`#${input}`).files[0];if(f){if(s[key])await removeMediaUrl(s[key]);s[key]=await uploadMedia(f,`${path}-${Date.now()}`);}}const promo=$('#sPromoFile').files[0];if(promo){const isVideo=promo.type.startsWith('video/');if(!isVideo&&!promo.type.startsWith('image/'))throw new Error('Chỉ nhận file ảnh hoặc video.');if(isVideo&&promo.size>25*1024*1024)throw new Error('Video tối đa 25MB.');if(s.promo_media_url)await removeMediaUrl(s.promo_media_url);s.promo_media_type=isVideo?'video':'image';s.promo_media_url=await uploadMedia(promo,`site/promo-${Date.now()}`);}if($('#sPromoRemove').checked&&s.promo_media_url){await removeMediaUrl(s.promo_media_url);s.promo_media_url='';s.promo_media_enabled=false;}const {error}=await supabase.rpc('admin_update_site_settings',{p_settings:s});if(error)throw error;m.className='form-msg ok';m.textContent='Đã cập nhật website.';currentSettings=s;applySettings(s);ev.target.querySelectorAll('input[type=file]').forEach(x=>x.value='');$('#sPromoRemove').checked=false;await loadEvents();}catch(err){m.className='form-msg err';m.textContent=err.message||String(err);}});
+async function populateSettingsForm(){await loadSiteSettings();const s=currentSettings||fallbackSettings;$('#sHeroTitle').value=s.hero_title||'';$('#sHeroSubtitle').value=s.hero_subtitle||'';$('#sRules').value=s.rules_text||'';$('#sTikTok').value=s.tiktok_url||'';$('#sYouTube').value=s.youtube_url||'';$('#sFacebook').value=s.facebook_url||'';$('#sZalo').value=s.zalo_url||'';$('#sHostContact').value=s.host_contact||'';}
+$('#siteSettingsForm').addEventListener('submit',async ev=>{ev.preventDefault();if(currentAdminRole!=='owner')return alert('Chỉ Owner được chỉnh giao diện website.');const m=$('#siteSettingsMsg');m.textContent='Đang lưu…';m.className='form-msg';try{let s={...(currentSettings||fallbackSettings),hero_title:$('#sHeroTitle').value.trim(),hero_subtitle:$('#sHeroSubtitle').value.trim(),rules_text:$('#sRules').value.trim(),tiktok_url:$('#sTikTok').value.trim(),youtube_url:$('#sYouTube').value.trim(),facebook_url:$('#sFacebook').value.trim(),zalo_url:$('#sZalo').value.trim(),host_contact:$('#sHostContact').value.trim()};const files=[['sLogoFile','logo_url','site/logo'],['sHeroFile','hero_image_url','site/hero'],['sBackgroundFile','background_image_url','site/background']];for(const [input,key,path] of files){const f=$(`#${input}`).files[0];if(f){if(s[key])await removeMediaUrl(s[key]);s[key]=await uploadMedia(f,`${path}-${Date.now()}`);}}const {error}=await supabase.from('site_settings').upsert({id:1,...s,updated_at:new Date().toISOString()});if(error)throw error;m.className='form-msg ok';m.textContent='Đã cập nhật website.';currentSettings=s;applySettings(s);ev.target.querySelectorAll('input[type=file]').forEach(x=>x.value='');}catch(err){m.className='form-msg err';m.textContent=err.message||String(err);}});
 
 await recoverMobileAuthSession();
 await Promise.all([loadSiteSettings(),loadEvents(),loadTeamVideos()]);

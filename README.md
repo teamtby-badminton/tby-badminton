@@ -60,3 +60,6 @@ Supabase → Authentication → URL Configuration:
 - Gửi thông báo Telegram/Zalo/Discord khi có người đăng ký.
 - QR đăng ký tại sân.
 - Admin sửa/xóa kèo và xuất Excel danh sách.
+
+## Fix khách xem kèo
+Nếu Owner thấy kèo nhưng khách chưa đăng nhập không thấy, chạy `FIX_PUBLIC_GUEST_VIEW.sql` trong Supabase SQL Editor một lần. View công khai chỉ trả tên/giới tính/trình của người đăng ký, không trả SĐT/ghi chú.

@@ -490,7 +490,87 @@ async function toggleRegistration(id,isOpen){
 }
 async function toggleCancelEvent(id,isCancelled){if(!['owner','admin'].includes(currentAdminRole))return alert('Chỉ Owner/Admin mới được thay đổi kèo.');if(!confirm(`Bạn có chắc muốn ${isCancelled?'mở lại':'hủy'} kèo này?`))return;const patch=isCancelled?{is_cancelled:false,is_open:true}:{is_cancelled:true,is_open:false};const {error}=await supabase.from('events').update(patch).eq('id',id);if(error)return alert(error.message);await Promise.all([loadEvents(),loadAdminEvents()]);}
 async function deleteEvent(id){if(!['owner','admin'].includes(currentAdminRole))return alert('Chỉ Owner/Admin mới được xóa kèo.');const e=currentAdminEvents.find(x=>x.id===id);if(!confirm(`XÓA VĨNH VIỄN kèo “${e?.title||''}”?\nToàn bộ người đăng ký cũng sẽ bị xóa.`))return;if(e?.image_url)await removeMediaUrl(e.image_url);const {error}=await supabase.from('events').delete().eq('id',id);if(error)return alert(error.message);await Promise.all([loadEvents(),loadAdminEvents()]);}
-async function loadAdminPlayers(eventId){const box=$(`#players-${eventId}`);if(!box)return;if(!box.hidden){box.hidden=true;return;}box.hidden=false;box.innerHTML='<div class="admin-empty">Đang tải danh sách…</div>';const {data,error}=await supabase.rpc('admin_get_registrations',{p_event_id:eventId});if(error){box.innerHTML=`<div class="admin-empty">${esc(error.message)}</div>`;return;}if(!data?.length){box.innerHTML='<div class="admin-empty">Chưa có người đăng ký.</div>';return;}box.innerHTML=data.map(r=>`<div class="admin-player-row"><div><strong>${esc(r.full_name)}</strong><span>${r.gender==='male'?'Nam':'Nữ'} · ${esc(r.level)} · ${esc(r.phone||'')}</span>${r.note?`<small>Ghi chú: ${esc(r.note)}</small>`:''}<small>Đăng ký: ${new Date(r.created_at).toLocaleString('vi-VN')}</small></div><button type="button" class="btn btn-danger btn-sm" data-delete-registration="${r.id}" data-event-id="${eventId}" data-name="${esc(r.full_name)}">Xóa slot</button></div>`).join('');box.querySelectorAll('[data-delete-registration]').forEach(b=>b.addEventListener('click',()=>deleteRegistration(b.dataset.deleteRegistration,b.dataset.eventId,b.dataset.name)));}
+async function loadAdminPlayers(eventId,refresh=false){
+  const box=$(`#players-${eventId}`);if(!box)return;
+  if(!refresh&&!box.hidden){box.hidden=true;return;}
+  box.hidden=false;box.innerHTML='<div class="admin-empty">Đang tải danh sách…</div>';
+  const {data,error}=await supabase.rpc('admin_get_registrations',{p_event_id:eventId});
+  if(error){box.innerHTML=`<div class="admin-empty">${esc(error.message)}</div>`;return;}
+  if(!data?.length){box.innerHTML='<div class="admin-empty">Chưa có người đăng ký.</div>';return;}
+  const canEdit=currentAdminUser&&['owner','admin'].includes(currentAdminRole);
+  box.innerHTML=data.map(r=>`<div class="admin-player-row"><div><strong>${esc(r.full_name)}</strong><span>${r.gender==='male'?'Nam':'Nữ'} · ${esc(r.level)} · ${esc(r.phone||'')}</span>${r.note?`<small>Ghi chú: ${esc(r.note)}</small>`:''}<small>Đăng ký: ${new Date(r.created_at).toLocaleString('vi-VN')}</small></div><div>${canEdit?`<button type="button" class="btn btn-outline btn-sm" data-edit-registration="${esc(r.id)}">Sửa slot</button>`:''}<button type="button" class="btn btn-danger btn-sm" data-delete-registration="${r.id}" data-event-id="${eventId}" data-name="${esc(r.full_name)}">Xóa slot</button></div></div>`).join('');
+  box.querySelectorAll('[data-edit-registration]').forEach(b=>b.addEventListener('click',()=>{
+    const row=data.find(r=>r.id===b.dataset.editRegistration);
+    if(row)editRegistration(row,eventId);
+  }));
+  box.querySelectorAll('[data-delete-registration]').forEach(b=>b.addEventListener('click',()=>deleteRegistration(b.dataset.deleteRegistration,b.dataset.eventId,b.dataset.name)));
+}
+
+function editRegistration(row,eventId){
+  if(!currentAdminUser||!['owner','admin'].includes(currentAdminRole))return;
+  if($('#editRegistrationDialog'))return;
+  const editorUserId=currentAdminUser.id;
+  const dialog=document.createElement('dialog');
+  dialog.id='editRegistrationDialog';dialog.className='dialog';
+  dialog.setAttribute('aria-labelledby','editRegistrationTitle');
+  dialog.innerHTML=`<form class="dialog-card">
+    <div class="dialog-head"><div><span class="kicker">NGƯỜI ĐĂNG KÝ</span><h2 id="editRegistrationTitle">Sửa slot</h2></div><button type="button" class="icon-btn" data-dismiss aria-label="Đóng">×</button></div>
+    <div class="form-grid">
+      <label class="full">Họ và tên *<input name="full_name" required maxlength="50" /></label>
+      <label>Giới tính *<select name="gender" required><option value="male">Nam</option><option value="female">Nữ</option></select></label>
+      <label>Trình độ *<select name="level" required></select></label>
+      <label class="full">Số điện thoại / Zalo *<input name="phone" required maxlength="30" /></label>
+      <label class="full">Ghi chú<textarea name="note" rows="3" maxlength="200"></textarea></label>
+    </div>
+    <p class="form-msg" role="status" aria-live="polite"></p>
+    <div class="admin-actions"><button type="submit" class="btn btn-primary">Lưu thay đổi</button><button type="button" class="btn btn-ghost" data-dismiss>Hủy</button></div>
+  </form>`;
+  const form=dialog.querySelector('form'),fields=form.elements;
+  for(const option of $('#level').options)fields.namedItem('level').append(option.cloneNode(true));
+  // Keep historical levels selectable even if the registration form has changed.
+  if(row.level&&!Array.from(fields.namedItem('level').options).some(o=>o.value===row.level)){
+    const option=document.createElement('option');option.value=row.level;option.textContent=row.level;
+    fields.namedItem('level').append(option);
+  }
+  for(const key of ['full_name','gender','level','phone','note'])fields.namedItem(key).value=row[key]??'';
+  let saving=false;
+  const dismiss=()=>{if(!saving)dialog.close();};
+  dialog.querySelectorAll('[data-dismiss]').forEach(b=>b.addEventListener('click',dismiss));
+  dialog.addEventListener('cancel',ev=>{if(saving)ev.preventDefault();});
+  dialog.addEventListener('close',()=>dialog.remove());
+  form.addEventListener('submit',async ev=>{
+    ev.preventDefault();if(saving)return;
+    const msg=dialog.querySelector('.form-msg');
+    const fail=text=>{msg.className='form-msg err';msg.textContent=text;};
+    if(!currentAdminUser||currentAdminUser.id!==editorUserId||!['owner','admin'].includes(currentAdminRole)){
+      fail('Chỉ Owner/Admin đang đăng nhập mới được sửa slot.');return;
+    }
+    if(!form.reportValidity())return;
+    const patch={};
+    for(const key of ['full_name','gender','level','phone','note'])patch[key]=fields.namedItem(key).value.trim();
+    if(!patch.full_name||!patch.phone||!patch.level){fail('Vui lòng nhập họ tên, trình độ và số điện thoại/Zalo.');return;}
+    if(!['male','female'].includes(patch.gender)){fail('Giới tính không hợp lệ.');return;}
+    saving=true;msg.className='form-msg';msg.textContent='Đang lưu…';
+    const controls=Array.from(fields);controls.forEach(control=>control.disabled=true);
+    try{
+      // Request the updated ID: RLS rejection or a deleted row must not look like success.
+      const {data,error}=await supabase.from('registrations').update(patch).eq('id',row.id).eq('event_id',eventId).select('id').single();
+      if(error)throw error;
+      if(!data||data.id!==row.id)throw new Error('Không cập nhật được slot. Vui lòng tải lại danh sách và kiểm tra quyền tài khoản.');
+    }catch(error){
+      fail(error.message||'Không lưu được thay đổi. Vui lòng thử lại.');
+      saving=false;controls.forEach(control=>control.disabled=false);return;
+    }
+    dialog.close();
+    try{
+      await Promise.all([loadEvents(),loadAdminEvents()]);
+      if(currentAdminUser&&currentAdminUser.id===editorUserId&&['owner','admin'].includes(currentAdminRole))await loadAdminPlayers(eventId,true);
+    }catch(error){
+      alert('Đã lưu slot, nhưng chưa tải lại được danh sách. Vui lòng bấm Làm mới.');
+    }
+  });
+  document.body.append(dialog);dialog.showModal();
+}
 async function deleteRegistration(id,eventId,name){if(!confirm(`Xóa slot đăng ký của “${name}”?`))return;const {error}=await supabase.from('registrations').delete().eq('id',id);if(error)return alert(error.message);await Promise.all([loadEvents(),loadAdminEvents()]);const btn=document.querySelector(`[data-admin-players="${eventId}"]`);if(btn)await loadAdminPlayers(eventId);}
 
 $('#ownerRefreshBtn').addEventListener('click',loadOwnerAccess);async function loadOwnerAccess(){if(currentAdminRole!=='owner')return;await Promise.all([loadPendingAdmins(),loadManagers()]);}

@@ -1021,29 +1021,16 @@
 .image-preview{aspect-ratio:16/9;height:auto!important;background:#071f35}
 @media(max-width:860px){.event-slogan-custom{font-size:22px;max-width:125px}}
 
-/* Smooth section navigation with room for the sticky menu. */
+/* Lightweight motion: no scroll-linked animation or scaling of media cards. */
 html { scroll-padding-top: 100px; }
-@media (prefers-reduced-motion: no-preference) {
-  /* Continuous, subtle hero movement in browsers with scroll timelines. */
-  @supports (animation-timeline: view()) {
-    .hero { view-timeline-name: --hero-scroll; view-timeline-axis: block; }
-    .hero-content {
-      animation: tby-hero-morph linear both;
-      animation-timeline: --hero-scroll;
-      animation-range: exit 0% exit 100%;
-      transform-origin: center center;
-    }
-    @keyframes tby-hero-morph {
-      from { transform: translateY(0) scale(1); }
-      to { transform: translateY(45px) scale(.96); }
-    }
-  }
+@media (max-width: 860px) {
+  body { background-attachment: scroll; }
+  .topbar { backdrop-filter: none; -webkit-backdrop-filter: none; background: #fff; }
 }
 @media (max-width: 560px) {
   html { scroll-padding-top: 125px; }
 }
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto !important; }
-  .hero-content { animation: none !important; }
   .btn { transition: none !important; }
 }

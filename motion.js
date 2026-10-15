@@ -3,7 +3,7 @@
   const main = document.querySelector('main');
   if (!main || !('IntersectionObserver' in window) || !Element.prototype.animate) return;
   const preference = matchMedia('(prefers-reduced-motion: reduce)');
-  const selector = '.tby-social-banner, .hero-content > *, .section-head, .event-card, .lookup-card, .video-card, .rule-grid > article';
+  const selector = '.hero-content > *, .section-head, .event-main h3, .video-card h3, .rule-grid > article';
   const tracked = new Set();
   const played = new WeakSet();
   const running = new Map();
@@ -15,20 +15,20 @@
   }
 
   const observer = new IntersectionObserver(entries => {
-    let order = 0;
+
     for (const entry of entries) {
       if (!entry.isIntersecting || played.has(entry.target) || preference.matches) continue;
       const element = entry.target;
       played.add(element);
       observer.unobserve(element);
       // Keyboard interaction always takes priority over decorative motion.
-      if (element.contains(document.activeElement)) continue;
+      if (element.contains(document.activeElement) || running.size >= 3) continue;
       const animation = element.animate([
-        { opacity: 0.12, transform: 'translateY(34px) scale(0.975)' },
-        { opacity: 1, transform: 'translateY(0) scale(1)' }
+        { opacity: 0.5, transform: 'translateY(12px)' },
+        { opacity: 1, transform: 'translateY(0)' }
       ], {
-        duration: 820,
-        delay: Math.min(order++ * 65, 195),
+        duration: 420,
+        delay: 0,
         easing: 'cubic-bezier(0.22, 1, 0.36, 1)',
         fill: 'backwards'
       });

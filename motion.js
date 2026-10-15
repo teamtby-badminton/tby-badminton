@@ -14,12 +14,12 @@
                     line=[... như trên, + độ đậm vạch sân, màu]  */
   const GREEN='#10a94f',BLUE='#0759ad',NAVY='#061b33',WHITE='#ffffff';
   const K=[
-    {id:'heroSection',     bg:NAVY,      fg:WHITE, f:[76,50,62,62,50,0,1,GREEN],     l:[24,78,84,84,50,0,.28,0,WHITE]},
-    {id:'keo',             bg:'#eef3f8', fg:NAVY,  f:[50,6,170,14,7,0,.9,GREEN],      l:[50,56,150,92,2,0,.2,1,BLUE]},
-    {id:'tra-cuu-dang-ky', bg:'#dce8f4', fg:NAVY,  f:[14,74,42,42,50,0,.95,GREEN],    l:[86,28,58,58,50,0,.3,0,BLUE]},
-    {id:'video',           bg:NAVY,      fg:WHITE, f:[50,50,50,92,9,0,.5,BLUE],       l:[50,50,70,112,9,-7,.6,0,GREEN]},
-    {id:'noiquy',          bg:BLUE,      fg:WHITE, f:[90,20,60,60,50,0,.9,GREEN],     l:[10,82,120,120,50,45,.25,1,WHITE]},
-    {id:'lien-he',         bg:NAVY,      fg:WHITE, f:[50,56,96,96,50,0,.22,GREEN],     l:[50,56,124,124,50,0,.22,0,WHITE]},
+    {id:'heroSection',     bg:NAVY,      fg:WHITE, f:[78,48,64,64,50,0,1,GREEN],      l:[22,82,90,90,50,0,.22,0,WHITE]},
+    {id:'keo',             bg:'#eef3f8', fg:NAVY,  f:[95,46,28,28,50,0,.9,GREEN],      l:[50,55,150,92,2,0,.14,1,BLUE]},
+    {id:'tra-cuu-dang-ky', bg:'#dce8f4', fg:NAVY,  f:[12,70,40,40,50,0,.95,GREEN],     l:[88,26,56,56,50,0,.25,0,BLUE]},
+    {id:'video',           bg:NAVY,      fg:WHITE, f:[50,50,46,82,9,0,.45,BLUE],       l:[50,50,64,104,9,-6,.5,0,GREEN]},
+    {id:'noiquy',          bg:BLUE,      fg:WHITE, f:[92,18,58,58,50,0,.9,GREEN],      l:[8,86,110,110,50,0,.22,1,WHITE]},
+    {id:'lien-he',         bg:NAVY,      fg:WHITE, f:[50,52,80,80,50,0,1,GREEN],       l:[50,52,112,112,50,0,.25,0,WHITE]},
   ].map(k=>({id:k.id,v:[...k.f.slice(0,7),...hex(k.f[7]),...k.l.slice(0,7),k.l[7],...hex(k.l[8]),...hex(k.bg),...hex(k.fg)]}));
   const N=K.length, L=K[0].v.length;
 
@@ -48,15 +48,16 @@
     const y=scrollY, vh=innerHeight;
     const moved=y!==lastY; lastY=y;
 
-    /* f = vị trí phân số giữa các slide; mỗi ranh giới chạy trong 80% chiều cao màn hình */
+    /* f = vị trí phân số giữa các slide; mỗi ranh giới chạy trong 60% chiều cao màn hình */
     let f=0;
     for(let k=0;k<N-1;k++){
       const top=secs[k+1].getBoundingClientRect().top;
-      f+=smooth(clamp((vh-top)/(vh*.8)));
+      f+=smooth(clamp((vh*.92-top)/(vh*.6)));
     }
     const i=Math.min(Math.floor(f),N-2), t=f-i;
     const A=K[i].v,B=K[i+1].v,tgt=new Array(L);
-    for(let j=0;j<L;j++)tgt[j]=A[j]+(B[j]-A[j])*t;
+    const tf=smooth(clamp((t-.35)/.3));          /* chữ đổi màu nhanh quanh giữa chặng */
+    for(let j=0;j<L;j++){const u=j>=24?tf:t;tgt[j]=A[j]+(B[j]-A[j])*u;}
     if(!cur)cur=tgt.slice();
     const a=reduce?1:1-Math.exp(-dt*9);   /* làm mượt thêm để chuyển động có quán tính */
     let diff=0;
@@ -78,9 +79,8 @@
 
       /* hero trôi lên, mờ và nhòe dần khi cuộn đi */
       const hp=clamp(y/(vh*.7));
-      heroIn.style.transform=`translate3d(0,${y*.2}px,0) scale(${1-.05*hp})`;
+      heroIn.style.transform=`translate3d(0,${y*.2}px,0) scale(${1-.08*hp})`;
       heroIn.style.opacity=1-hp;
-      heroIn.style.filter=hp>.02?`blur(${hp*6}px)`:'';
 
       /* tiến độ --p của từng khối */
       for(const el of items){

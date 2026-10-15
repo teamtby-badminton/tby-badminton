@@ -55,7 +55,7 @@ async function loadSiteSettings(){
 function applySettings(s){
   $('#heroTitle').innerHTML=esc(s.hero_title||fallbackSettings.hero_title).replace(/\n/g,'<br>');
   $('#heroSubtitle').textContent=s.hero_subtitle||fallbackSettings.hero_subtitle;
-  if(s.logo_url){$('#headerLogo').src=s.logo_url;$('#footerLogo').src=s.logo_url;}
+  if(s.logo_url){$('#headerLogo').src=s.logo_url;$('#footerLogo').src=s.logo_url;$('#followLogo').src=s.logo_url;}
   $('#heroSection').style.setProperty('--hero-img',s.hero_image_url?`url("${s.hero_image_url}")`:'none');
   $('#morphStage').style.setProperty('--bgimg',s.background_image_url?`url("${s.background_image_url}")`:'none');
   const rules=(s.rules_text||fallbackSettings.rules_text).split(/\r?\n/).map(x=>x.trim()).filter(Boolean);

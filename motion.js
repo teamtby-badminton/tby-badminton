@@ -1,5 +1,5 @@
 /* TBY — chuyển cảnh mượt khi cuộn (kiểu Morph của PowerPoint)
-   Ý tưởng: 2 hình (tròn xanh lá + khung xanh dương, lấy từ logo) nằm cố định phía sau.
+   Ý tưởng: 2 hình (tròn + khung xanh dương) nằm cố định phía sau.
    Mỗi phần của trang là một "slide" với vị trí/kích cỡ/màu riêng; khi cuộn qua ranh giới
    giữa 2 phần, hình + màu nền + màu chữ được nội suy mượt sang slide kế tiếp. */
 (()=>{
@@ -12,14 +12,14 @@
 
   /* Mỗi keyframe: fill=[x vw, y vh, w vmin, h vmin, bo góc %, xoay°, độ đậm, màu]
                     line=[... như trên, + độ đậm vạch sân, màu]  */
-  const GREEN='#10a94f',BLUE='#0759ad',NAVY='#061b33',WHITE='#ffffff';
+  const ACCENT='#0c74d6',LIGHT='#5aaef7',BLUE='#0759ad',NAVY='#061b33',WHITE='#ffffff';
   const K=[
-    {id:'heroSection',     bg:NAVY,      fg:WHITE, f:[78,48,64,64,50,0,1,GREEN],      l:[22,82,90,90,50,0,.22,0,WHITE]},
-    {id:'keo',             bg:'#eef3f8', fg:NAVY,  f:[95,46,28,28,50,0,.9,GREEN],      l:[50,55,150,92,2,0,.14,1,BLUE]},
-    {id:'tra-cuu-dang-ky', bg:'#dce8f4', fg:NAVY,  f:[12,70,40,40,50,0,.95,GREEN],     l:[88,26,56,56,50,0,.25,0,BLUE]},
-    {id:'video',           bg:NAVY,      fg:WHITE, f:[50,50,46,82,9,0,.45,BLUE],       l:[50,50,64,104,9,-6,.5,0,GREEN]},
-    {id:'noiquy',          bg:BLUE,      fg:WHITE, f:[92,18,58,58,50,0,.9,GREEN],      l:[8,86,110,110,50,0,.22,1,WHITE]},
-    {id:'lien-he',         bg:NAVY,      fg:WHITE, f:[50,52,80,80,50,0,1,GREEN],       l:[50,52,112,112,50,0,.25,0,WHITE]},
+    {id:'heroSection',     bg:NAVY,      fg:WHITE, f:[78,48,64,64,50,0,1,ACCENT],      l:[22,82,90,90,50,0,.22,0,WHITE]},
+    {id:'keo',             bg:'#eef3f8', fg:NAVY,  f:[95,46,28,28,50,0,.9,ACCENT],      l:[50,55,150,92,2,0,.14,1,BLUE]},
+    {id:'tra-cuu-dang-ky', bg:'#dce8f4', fg:NAVY,  f:[12,70,40,40,50,0,.95,ACCENT],     l:[88,26,56,56,50,0,.25,0,BLUE]},
+    {id:'video',           bg:NAVY,      fg:WHITE, f:[50,50,46,82,9,0,.45,BLUE],       l:[50,50,64,104,9,-6,.5,0,LIGHT]},
+    {id:'noiquy',          bg:BLUE,      fg:WHITE, f:[92,18,58,58,50,0,.55,LIGHT],      l:[8,86,110,110,50,0,.22,1,WHITE]},
+    {id:'lien-he',         bg:NAVY,      fg:WHITE, f:[50,50,84,84,50,0,1,ACCENT],       l:[50,52,112,112,50,0,.25,0,WHITE]},
   ].map(k=>({id:k.id,v:[...k.f.slice(0,7),...hex(k.f[7]),...k.l.slice(0,7),k.l[7],...hex(k.l[8]),...hex(k.bg),...hex(k.fg)]}));
   const N=K.length, L=K[0].v.length;
 

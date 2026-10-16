@@ -1,0 +1,3 @@
+Bộ hình động tác được tạo bằng công cụ imagegen tích hợp, nền trong suốt.
+Tệp: assets/tby-chibi-actions.png
+Prompt: Create a transparent 4 columns by 4 rows animation sprite sheet of the referenced TBY 3D-style chibi badminton mascot. Preserve blue TBY headband, black spiky hair, white blue green uniform, sneakers and racket. Four consecutive frames per row: friendly wave; happy cheer; small hop with crouch, takeoff, airborne and landing; sleepy yawn and recovery. Equal square cells, consistent character scale and camera, full body inside each cell, no labels or backdrop.

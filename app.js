@@ -55,7 +55,7 @@ async function loadSiteSettings(){
 function applySettings(s){
   $('#heroTitle').innerHTML=esc(s.hero_title||fallbackSettings.hero_title).replace(/\n/g,'<br>');
   $('#heroSubtitle').textContent=s.hero_subtitle||fallbackSettings.hero_subtitle;
-  if(s.logo_url){$('#headerLogo').src=s.logo_url;$('#footerLogo').src=s.logo_url;}
+  for(const id of ['headerLogo','heroLogo','footerLogo'])$('#'+id).src=mapsUrl(s.logo_url)||'assets/logo.png';
   $('#heroSection').style.setProperty('--hero-img',s.hero_image_url?`url("${s.hero_image_url}")`:'none');
   $('#morphStage').style.setProperty('--bgimg',s.background_image_url?`url("${s.background_image_url}")`:'none');
   const heroPhoto=$('#heroPhoto');
@@ -64,7 +64,7 @@ function applySettings(s){
   if(heroUrl)heroPhoto.src=heroUrl;else heroPhoto.removeAttribute('src');
   $('#heroSection').classList.toggle('has-hero-photo',!!heroUrl);
   const backgroundUrl=mapsUrl(s.background_image_url);
-  document.body.style.backgroundImage=backgroundUrl?'linear-gradient(rgba(247,247,239,.83),rgba(247,247,239,.83)),url('+JSON.stringify(backgroundUrl)+')':'none';
+  document.body.style.backgroundImage=backgroundUrl?'linear-gradient(rgba(244,248,253,.85),rgba(244,248,253,.85)),url('+JSON.stringify(backgroundUrl)+')':'none';
   const rules=(s.rules_text||fallbackSettings.rules_text).split(/\r?\n/).map(x=>x.trim()).filter(Boolean);
   $('#rulesList').innerHTML=(rules.length?rules:['Nội quy đang được cập nhật.']).map((r,i)=>`<details><summary><span>${String(i+1).padStart(2,'0')}</span>${esc(r)}<i>+</i></summary><p>Cảm ơn bạn đã cùng giữ tinh thần đẹp trên sân TBY.</p></details>`).join('');
   const links=[['TikTok',s.tiktok_url,'tiktok'],['YouTube',s.youtube_url,'youtube'],['Facebook',s.facebook_url,'facebook'],['Zalo',s.zalo_url,'zalo']].filter(x=>x[1]);

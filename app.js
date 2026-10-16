@@ -77,7 +77,7 @@ const boardRemaining=e=>Math.max(0,Number(e.total_slots||10)-boardCount(e));
 const boardOpen=e=>e.is_open&&!e.is_cancelled&&boardRemaining(e)>0;
 function boardMedia(e,className){
  const url=mapsUrl(e.image_url);if(!url)return '';
- return e.media_type==='video'?`<video class="${className}" src="${esc(url)}" controls muted playsinline preload="metadata"></video>`:`<img class="${className}" src="${esc(url)}" alt="${esc(e.title||'Ảnh kèo')}" loading="lazy">`;
+ return e.media_type==='video'?`<video class="${className}" src="${esc(url)}" controls autoplay muted loop playsinline preload="metadata"></video>`:`<img class="${className}" src="${esc(url)}" alt="${esc(e.title||'Ảnh kèo')}" loading="lazy">`;
 }
 const boardLevelMatch=e=>boardLevel==='all'||(boardLevel==='beginner'?/mới|yếu|new|beginner/i.test(e.level_range||''):!/mới|yếu|new|beginner/i.test(e.level_range||''));
 function boardDates(){const start=today();const list=[];for(let i=0;i<7;i++){const d=new Date(start+'T12:00:00+07:00');d.setUTCDate(d.getUTCDate()+i);list.push(new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Ho_Chi_Minh',year:'numeric',month:'2-digit',day:'2-digit'}).format(d))}return [...new Set([...list,...boardEvents.map(e=>e.event_date)])].sort()}

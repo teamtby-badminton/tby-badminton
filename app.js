@@ -56,7 +56,12 @@ function applySettings(s){
   $('#heroTitle').innerHTML=esc(s.hero_title||fallbackSettings.hero_title).replace(/\n/g,'<br>');
   $('#heroSubtitle').textContent=s.hero_subtitle||fallbackSettings.hero_subtitle;
   if(s.logo_url){$('#headerLogo').src=s.logo_url;$('#footerLogo').src=s.logo_url;}
-  $('#heroSection').style.setProperty('--hero-img',s.hero_image_url?`url("${s.hero_image_url}")`:'none');
+  const teamPhoto=$('#teamPhoto'),teamPhotoWrap=$('#teamPhotoWrap');
+  const teamPhotoUrl=mapsUrl(s.hero_image_url);
+  teamPhoto.onload=()=>{teamPhotoWrap.hidden=false;};
+  teamPhoto.onerror=()=>{teamPhotoWrap.hidden=true;};
+  teamPhotoWrap.hidden=!teamPhotoUrl;
+  if(teamPhotoUrl){teamPhoto.src=teamPhotoUrl;}else{teamPhoto.removeAttribute('src');}
   $('#morphStage').style.setProperty('--bgimg',s.background_image_url?`url("${s.background_image_url}")`:'none');
   const rules=(s.rules_text||fallbackSettings.rules_text).split(/\r?\n/).map(x=>x.trim()).filter(Boolean);
   $('#rulesList').innerHTML=(rules.length?rules:['Nội quy đang được cập nhật.']).map((r,i)=>`<article><b>${String(i+1).padStart(2,'0')}</b><p>${esc(r)}</p></article>`).join('');

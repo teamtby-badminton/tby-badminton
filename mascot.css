@@ -1,0 +1,8 @@
+/* Decorative TBY companion. Isolated from booking and admin styles. */
+#tby-web-mascot{position:fixed;left:0;top:0;width:110px;height:110px;z-index:40;pointer-events:none;contain:layout style;will-change:transform}
+#tby-web-mascot[hidden]{display:none!important}
+#tby-web-mascot .tby-mascot-image{display:block;width:100%;height:100%;object-fit:contain;user-select:none;-webkit-user-drag:none;transform-origin:50% 92%;filter:drop-shadow(0 3px 2px #173a4726)}
+#tby-web-mascot.is-moving .tby-mascot-image{animation:tby-mascot-trot .56s ease-in-out infinite}
+@keyframes tby-mascot-trot{0%,100%{transform:translateY(0) rotate(-2deg)}50%{transform:translateY(-7px) rotate(2deg)}}
+@media(max-width:760px){#tby-web-mascot{width:82px;height:82px}}
+@media(prefers-reduced-motion:reduce){#tby-web-mascot .tby-mascot-image{animation:none!important;transform:none!important}}

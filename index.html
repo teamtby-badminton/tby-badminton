@@ -9,8 +9,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="./styles.css?v=5" />
-  <link rel="stylesheet" href="./theme.css?v=5" />
+  <link rel="stylesheet" href="./styles.css?v=tby-complete-14" />
+  <link rel="stylesheet" href="./theme.css?v=tby-complete-14" />
 
   <script>
     window.addEventListener('DOMContentLoaded', function(){
@@ -19,6 +19,7 @@
     });
   </script>
 
+  <link rel="stylesheet" href="./mascot.css?v=3" />
 </head>
 <body>
   <div id="morphStage" aria-hidden="true"><div class="m-fill"></div><div class="m-line"></div></div>
@@ -41,27 +42,20 @@
     <section class="hero" id="heroSection">
       <div class="container hero-content" id="heroInner">
         <div class="hero-copy">
-        <p class="hero-tag">TBY BADMINTON CLUB · TRAIN / BATTLE / YIELD</p>
+        <p class="hero-tag">TBY BADMINTON TEAM</p>
         <h1 id="heroTitle">Chơi hết mình.<br/>Kết nối bền lâu.</h1>
         <p id="heroSubtitle" class="hero-sub">Đăng ký slot vãng lai nhanh, xem chỗ trống theo thời gian thực và nhận thông tin kèo ngay trên điện thoại.</p>
         <div class="hero-actions">
           <a class="btn btn-primary btn-lg" href="#keo">Tìm kèo của bạn ↗</a>
           <a class="hero-secondary" href="#tra-cuu-dang-ky">Tra cứu đăng ký →</a>
         </div>
-        <p class="hero-footnote">CÙNG RA SÂN. CÙNG TIẾN BỘ.</p>
         </div>
-        <div class="hero-art" aria-hidden="true">
-          <div class="court-panel">
-            <div class="court-topline"><span>TEAM TBY</span><span>BADMINTON CLUB</span></div>
-            <div class="court-lines"><i class="court-center"></i><i class="court-net"></i><span class="court-word">TBY</span></div>
-          </div>
-          <div class="art-tag">Good players. Better friends.<span>Hẹn nhau trên sân cầu.</span></div>
-        </div>
+        <figure class="team-photo" id="teamPhotoWrap" hidden>
+          <img id="teamPhoto" alt="Đội cầu lông TBY" fetchpriority="high" />
+        </figure>
       </div>
       
     </section>
-
-    <div class="club-strip"><span>TRAIN WITH PURPOSE</span><span>✦</span><span>BATTLE WITH PASSION</span><span>✦</span><span>YIELD TOGETHER</span></div>
 
     <section class="container section" id="keo">
       <div class="section-head">
@@ -143,12 +137,15 @@
   </dialog>
 
 
-  <dialog id="registrationSuccessDialog" class="dialog success-dialog">
+  <dialog id="registrationSuccessDialog" class="dialog success-dialog" aria-labelledby="registrationSuccessTitle" aria-describedby="registrationSuccessSubtitle">
     <div class="dialog-card success-dialog-card">
-      <div class="success-check">✓</div>
-      <button type="button" class="icon-btn success-close" data-close="registrationSuccessDialog">×</button>
-      <div class="success-title">ĐĂNG KÝ THÀNH CÔNG!</div>
-      <p class="success-subtitle">Dưới đây là thông tin sân của bạn.</p>
+      <div class="success-mascot" aria-hidden="true">
+        <img src="./assets/tby-mascot.png" alt="" width="114" height="114" />
+        <span class="success-mascot-check">✓</span>
+      </div>
+      <button type="button" class="icon-btn success-close" data-close="registrationSuccessDialog" aria-label="Đóng thông báo">×</button>
+      <h2 id="registrationSuccessTitle" class="success-title">ĐĂNG KÝ THÀNH CÔNG!</h2>
+      <p id="registrationSuccessSubtitle" class="success-subtitle">Hẹn gặp bạn trên sân! Thông tin buổi cầu của bạn:</p>
       <div id="registrationSuccessBody" class="success-info"></div>
       <div class="success-actions">
         <button id="successHomeBtn" type="button" class="btn btn-ghost">🏠 Về trang chủ</button>
@@ -360,7 +357,8 @@
   </dialog>
 
   <script src="./config.js"></script>
-  <script type="module" src="./app.js?v=5"></script>
-  <script defer src="./motion.js?v=5"></script>
+  <script type="module" src="./app.js?v=tby-complete-14"></script>
+  <script defer src="./motion.js?v=tby-complete-14"></script>
+  <script defer src="./mascot.js?v=3"></script>
 </body>
 </html>

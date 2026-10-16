@@ -1,8 +1,9 @@
-/* Decorative TBY companion. Isolated from booking and admin styles. */
-#tby-web-mascot{position:fixed;left:0;top:0;width:110px;height:110px;z-index:40;pointer-events:none;contain:layout style;will-change:transform}
+/* The walk cycle is rendered from directional chibi poses. */
+#tby-web-mascot{position:fixed;left:0;top:0;width:116px;height:116px;z-index:40;pointer-events:none;contain:layout style;will-change:transform}
 #tby-web-mascot[hidden]{display:none!important}
-#tby-web-mascot .tby-mascot-image{display:block;width:100%;height:100%;object-fit:contain;user-select:none;-webkit-user-drag:none;transform-origin:50% 92%;filter:drop-shadow(0 3px 2px #173a4726)}
-#tby-web-mascot.is-moving .tby-mascot-image{animation:tby-mascot-trot .56s ease-in-out infinite}
-@keyframes tby-mascot-trot{0%,100%{transform:translateY(0) rotate(-2deg)}50%{transform:translateY(-7px) rotate(2deg)}}
-@media(max-width:760px){#tby-web-mascot{width:82px;height:82px}}
-@media(prefers-reduced-motion:reduce){#tby-web-mascot .tby-mascot-image{animation:none!important;transform:none!important}}
+#tby-web-mascot::before{content:'';position:absolute;left:28%;right:15%;bottom:3%;height:6%;border-radius:50%;background:#19344716;filter:blur(3px)}
+#tby-web-mascot .tby-mascot-sprite{display:block;width:100%;height:100%;background-repeat:no-repeat;background-size:400% 200%;background-position:33.333333% 0;transform-origin:50% 90%;filter:drop-shadow(0 1px 1px #173a4710)}
+#tby-web-mascot:not(.is-moving):not(.is-acting) .tby-mascot-sprite{animation:tby-chibi-breathe 2.6s ease-in-out infinite}
+@keyframes tby-chibi-breathe{0%,100%{transform:translateY(0) scaleY(1)}50%{transform:translateY(-.7px) scaleY(1.008)}}
+@media(max-width:760px){#tby-web-mascot{width:88px;height:88px}}
+@media(prefers-reduced-motion:reduce){#tby-web-mascot .tby-mascot-sprite{animation:none!important;transform:none!important}}

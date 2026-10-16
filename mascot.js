@@ -1,125 +1,168 @@
-/* TBY website mascot: no network, no changes to registration or admin logic. */
+/* TBY chibi: horizontal patrol along the bottom of the viewport. */
 (() => {
   'use strict';
   if (document.getElementById('tby-web-mascot')) return;
   const source = document.currentScript?.src || window.location.href;
-  const reduced = window.matchMedia('(prefers-reduced-motion: reduce)');
-  const small = window.matchMedia('(max-width: 760px)');
-
+  const reduced = matchMedia('(prefers-reduced-motion: reduce)');
+  const small = matchMedia('(max-width: 760px)');
   const mascot = document.createElement('div');
   mascot.id = 'tby-web-mascot';
-  mascot.setAttribute('aria-hidden', 'true');
   mascot.hidden = true;
-  const picture = document.createElement('img');
-  picture.className = 'tby-mascot-image';
-  picture.alt = '';
-  picture.draggable = false;
-  picture.decoding = 'async';
-  mascot.append(picture);
+  mascot.setAttribute('aria-hidden', 'true');
+  const sprite = document.createElement('span');
+  sprite.className = 'tby-mascot-sprite';
+  mascot.append(sprite);
   document.body.append(mascot);
 
-  let x = 16, y = 16, targetX = 16, targetY = 16;
-  let frame = 0, timer = 0, last = 0, positioned = false;
-  let ready = false, suspended = false, started = false;
-  const bounds = () => {
-    const size = small.matches ? 82 : 110;
-    const viewport = window.visualViewport;
-    const width = viewport?.width || document.documentElement.clientWidth || window.innerWidth;
-    const height = viewport?.height || document.documentElement.clientHeight || window.innerHeight;
-    const left = viewport?.offsetLeft || 0;
-    const top = viewport?.offsetTop || 0;
-    return {
-      minX: left + 12, maxX: left + Math.max(12, width - size - 12),
-      minY: top + 20, maxY: top + Math.max(20, height - size - 16)
-    };
-  };
-  const place = () => {
+  let x = 12, y = 12, facing = 0, distanceWalked = 0;
+  let ready = false, suspended = false, positioned = false;
+  let frame = 0, timer = 0, route = null, last = null;
+  let action = null, actionsReady = false, walksSinceAction = 1;
+  let actionBag = [];
+  const walkURL = new URL('assets/tby-chibi-walk.png',source).href;
+  const actionURL = new URL('assets/tby-chibi-actions.png',source).href;
+  const actions = [
+    {row:0, sequence:[0,1,2,3,2,3,2,1,0], beat:210},
+    {row:1, sequence:[0,1,2,3,2,3,2,1,0], beat:200},
+    {row:2, sequence:[0,0,1,2,2,3,3], beat:140},
+    {row:3, sequence:[0,0,1,1,2,2,2,1,3,3], beat:260}
+  ];
+  const size = () => small.matches ? 88 : 116;
+  const clamp = (v, min, max) => Math.max(min, Math.min(max, v));
+  function bounds() {
+    const v = window.visualViewport;
+    const width = v?.width || document.documentElement.clientWidth || innerWidth;
+    const height = v?.height || document.documentElement.clientHeight || innerHeight;
+    const left = v?.offsetLeft || 0, top = v?.offsetTop || 0;
+    return { minX:left+12, maxX:left+Math.max(12,width-size()-12),
+      minY:top+12, maxY:top+Math.max(12,height-size()-18) };
+  }
+  function pose(index = 1) {
+    sprite.style.backgroundImage = `url("${walkURL}")`;
+    sprite.style.backgroundSize = '400% 200%';
+    // Separate left/right artwork keeps the TBY lettering readable.
+    sprite.style.backgroundPosition = `${index * 100 / 3}% ${facing * 100}%`;
+  }
+  function place() {
     const b = bounds();
-    x = Math.max(b.minX, Math.min(x, b.maxX));
-    y = Math.max(b.minY, Math.min(y, b.maxY));
-    mascot.style.transform = `translate3d(${x.toFixed(1)}px,${y.toFixed(1)}px,0)`;
-  };
-  const canMove = () => ready && !suspended && !document.hidden && !reduced.matches;
-  const stop = () => {
-    cancelAnimationFrame(frame);
-    clearTimeout(timer);
-    frame = timer = 0;
-    last = 0;
+    x = clamp(x,b.minX,b.maxX); y = b.maxY;
+    mascot.style.transform = `translate3d(${x.toFixed(2)}px,${y.toFixed(2)}px,0)`;
+  }
+  const available = () => ready && !suspended && !document.hidden;
+  function stop() {
+    cancelAnimationFrame(frame); clearTimeout(timer);
+    frame = timer = 0; last = null; route = null; action = null;
     mascot.classList.remove('is-moving');
-  };
-  const plan = (delay = 900 + Math.random() * 1600) => {
-    if (!canMove()) return;
+    mascot.classList.remove('is-acting');
+    sprite.style.transform = '';
+    pose();
+  }
+  function plan(delay = 1000 + Math.random() * 2200) {
+    if (!available() || reduced.matches) return;
     clearTimeout(timer);
-    timer = window.setTimeout(walk, delay);
-  };
+    timer = setTimeout(walk,delay);
+  }
+  function act() {
+    timer = 0;
+    if (!available() || reduced.matches) return;
+    if (!actionsReady) {walk();return;}
+    // Show every gesture before refilling the shuffled bag.
+    if (!actionBag.length) {
+      actionBag = [0,1,2,3];
+      for (let i=3;i>0;i--) {
+        const j=Math.floor(Math.random()*(i+1));
+        [actionBag[i],actionBag[j]]=[actionBag[j],actionBag[i]];
+      }
+    }
+    action = {...actions[actionBag.shift()],elapsed:0};
+    walksSinceAction = 0; last = null;
+    mascot.classList.add('is-acting');
+    sprite.style.backgroundImage = `url("${actionURL}")`;
+    sprite.style.backgroundSize = '400% 400%';
+    sprite.style.backgroundPosition = `0% ${action.row*100/3}%`;
+    frame = requestAnimationFrame(actionStep);
+  }
+  function actionStep(now) {
+    frame = 0;
+    if (!available() || reduced.matches || !action) {stop();return;}
+    action.elapsed += last===null ? 0 : Math.min(now-last,60);
+    last = now;
+    const index = Math.floor(action.elapsed/action.beat);
+    if (index>=action.sequence.length) {stop();plan(1100);return;}
+    sprite.style.backgroundPosition = `${action.sequence[index]*100/3}% ${action.row*100/3}%`;
+    frame = requestAnimationFrame(actionStep);
+  }
   function step(now) {
     frame = 0;
-    if (!canMove()) { stop(); return; }
-    const dt = last ? Math.min((now - last) / 1000, .06) : 0;
-    last = now;
-    const dx = targetX - x, dy = targetY - y;
-    const remaining = Math.hypot(dx, dy);
-    const distance = (small.matches ? 30 : 45) * dt;
-    if (remaining <= Math.max(distance, .5)) {
-      x = targetX;
-      y = targetY;
-      place();
-      stop();
-      plan();
+    if (!available() || reduced.matches || !route) {stop();return;}
+    const delta = last===null ? 0 : Math.min(now-last,60);
+    last = now; route.elapsed += delta;
+    const u = Math.min(1,route.elapsed/route.duration);
+    const ramp = Math.min(.2,800/route.duration);
+    const eased = u<ramp ? u*u/(2*ramp*(1-ramp)) :
+      u>1-ramp ? 1-(1-u)*(1-u)/(2*ramp*(1-ramp)) :
+      (u-ramp/2)/(1-ramp);
+    const nextX = route.sx+(route.ex-route.sx)*eased;
+    distanceWalked += Math.abs(nextX-x);
+    x = nextX;
+    const phase = distanceWalked/(size()*.31);
+    pose(Math.floor(phase*4)%4);
+    const bob = -Math.abs(Math.sin(phase*Math.PI*2))*1.4;
+    sprite.style.transform = `translateY(${bob.toFixed(2)}px)`;
+    place();
+    if (u>=1) {
+      stop(); walksSinceAction++;
+      if(actionsReady && walksSinceAction>=2) timer=setTimeout(act,650);
+      else plan();
       return;
     }
-    x += dx / remaining * distance;
-    y += dy / remaining * distance;
-    place();
     frame = requestAnimationFrame(step);
   }
   function walk() {
     timer = 0;
-    if (!canMove()) return;
+    if (!available() || reduced.matches) return;
+    place();
     const b = bounds();
-    targetX = b.minX + Math.random() * (b.maxX - b.minX);
-    targetY = b.minY + Math.random() * (b.maxY - b.minY);
-    if (Math.hypot(targetX - x, targetY - y) < 80) {
-      targetX = x < (b.minX + b.maxX) / 2 ? b.maxX : b.minX;
-      targetY = y < (b.minY + b.maxY) / 2 ? b.maxY : b.minY;
-    }
-    if (Math.hypot(targetX - x, targetY - y) < 1) return;
-    last = 0;
+    let ex = facing===0 ? b.maxX : b.minX;
+    if(Math.abs(ex-x)<2) ex = facing===0 ? b.minX : b.maxX;
+    const dx=ex-x,length=Math.abs(dx);
+    if(length<2){plan(3000);return;}
+    facing = dx < 0 ? 1 : 0;
+    route={sx:x,ex,
+      duration:Math.max(1900,length/(small.matches?32:45)*1000),elapsed:0};
+    distanceWalked=0;last=null;
     mascot.classList.add('is-moving');
-    frame = requestAnimationFrame(step);
+    pose(0);
+    frame=requestAnimationFrame(step);
   }
   function sync() {
-    suspended = !!document.querySelector('dialog[open]') ||
+    suspended=!!document.querySelector('dialog[open]') ||
       !!document.activeElement?.matches('input,textarea,select,[contenteditable="true"]');
-    mascot.hidden = !ready || suspended;
-    if (!positioned || reduced.matches) {
-      const b = bounds();
-      x = b.minX;
-      y = b.maxY;
-      positioned = true;
-    }
-    place();
-    stop();
-    if (canMove()) plan(started ? 1400 : 2500);
-    started = true;
+    mascot.hidden=!ready||suspended;
+    if(!positioned||reduced.matches){const b=bounds();x=b.minX;y=b.maxY;positioned=true;}
+    place();stop();
+    if(available()&&!reduced.matches)plan(1100);
   }
-  document.addEventListener('visibilitychange', sync);
-  document.addEventListener('focusin', sync);
-  document.addEventListener('focusout', () => queueMicrotask(sync));
-  window.addEventListener('resize', sync, { passive: true });
-  window.addEventListener('pageshow', sync);
-  window.addEventListener('pagehide', stop);
-  window.visualViewport?.addEventListener('resize', sync, { passive: true });
-  window.visualViewport?.addEventListener('scroll', sync, { passive: true });
-  reduced.addEventListener('change', sync);
-  // Includes dialogs inserted later by the application.
-  const observer = new MutationObserver(sync);
-  observer.observe(document.body, { subtree: true, attributes: true, attributeFilter: ['open'] });
-  picture.addEventListener('load', () => { ready = true; sync(); }, { once: true });
-  picture.addEventListener('error', () => {
-    ready = false;
-    stop();
-    mascot.hidden = true;
-  });
-  picture.src = new URL('assets/tby-mascot.png', source).href;
+  document.addEventListener('visibilitychange',sync);
+  document.addEventListener('focusin',sync);
+  document.addEventListener('focusout',()=>queueMicrotask(sync));
+  window.addEventListener('resize',sync,{passive:true});
+  window.addEventListener('pageshow',sync);
+  window.addEventListener('pagehide',stop);
+  window.visualViewport?.addEventListener('resize',sync,{passive:true});
+  window.visualViewport?.addEventListener('scroll',sync,{passive:true});
+  reduced.addEventListener('change',sync);
+  new MutationObserver(sync).observe(document.body,{subtree:true,attributes:true,attributeFilter:['open']});
+  const sheet = new Image();
+  sheet.onload=()=>{
+    if(sheet.naturalWidth<4||sheet.naturalHeight<2)return;
+    sprite.style.backgroundImage=`url("${sheet.src}")`;
+    ready=true;sync();
+  };
+  sheet.onerror=()=>{stop();ready=false;mascot.hidden=true;};
+  sheet.src=walkURL;
+  const actionSheet = new Image();
+  actionSheet.onload=()=>{actionsReady=actionSheet.naturalWidth>=4 && actionSheet.naturalHeight>=4;};
+  actionSheet.onerror=()=>{actionsReady=false;};
+  actionSheet.src=actionURL;
 })();

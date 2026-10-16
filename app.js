@@ -21,7 +21,7 @@ function updateOwnerPasswordVisibility(){
 const $ = s => document.querySelector(s);
 const esc = (v='') => String(v).replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
 const fmtDate = d => new Intl.DateTimeFormat('vi-VN',{weekday:'short',day:'2-digit',month:'2-digit',year:'numeric'}).format(new Date(d+'T00:00:00'));
-const today = () => new Date().toISOString().slice(0,10);
+const today = () => new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Ho_Chi_Minh',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
 
 let currentAdminUser=null, currentAdminRole=null, currentAdminEvents=[], currentSettings=null;
 let pendingRemoveEventImage=false;
@@ -59,31 +59,50 @@ function applySettings(s){
   $('#heroSection').style.setProperty('--hero-img',s.hero_image_url?`url("${s.hero_image_url}")`:'none');
   $('#morphStage').style.setProperty('--bgimg',s.background_image_url?`url("${s.background_image_url}")`:'none');
   const rules=(s.rules_text||fallbackSettings.rules_text).split(/\r?\n/).map(x=>x.trim()).filter(Boolean);
-  $('#rulesList').innerHTML=(rules.length?rules:['Nội quy đang được cập nhật.']).map((r,i)=>`<article><b>${String(i+1).padStart(2,'0')}</b><p>${esc(r)}</p></article>`).join('');
+  $('#rulesList').innerHTML=(rules.length?rules:['Nội quy đang được cập nhật.']).map((r,i)=>`<details><summary><span>${String(i+1).padStart(2,'0')}</span>${esc(r)}<i>+</i></summary><p>Cảm ơn bạn đã cùng giữ tinh thần đẹp trên sân TBY.</p></details>`).join('');
   const links=[['TikTok',s.tiktok_url,'tiktok'],['YouTube',s.youtube_url,'youtube'],['Facebook',s.facebook_url,'facebook'],['Zalo',s.zalo_url,'zalo']].filter(x=>x[1]);
   $('#socialLinks').innerHTML=links.length?links.map(([name,url,key])=>`<a data-social="${key}" href="${esc(url)}" target="_blank" rel="noopener noreferrer">${name}</a>`).join(''):'<span class="muted">Các kênh mạng xã hội đang cập nhật.</span>';
 }
 
+let boardEvents=[],boardDay='',boardLevel='all';
+const boardCount=e=>Number(e.total_count??(Number(e.male_count||0)+Number(e.female_count||0)));
+const boardRemaining=e=>Math.max(0,Number(e.total_slots||10)-boardCount(e));
+const boardOpen=e=>e.is_open&&!e.is_cancelled&&boardRemaining(e)>0;
+const boardLevelMatch=e=>boardLevel==='all'||(boardLevel==='beginner'?/mới|yếu|new|beginner/i.test(e.level_range||''):!/mới|yếu|new|beginner/i.test(e.level_range||''));
+function boardDates(){const start=today();const list=[];for(let i=0;i<7;i++){const d=new Date(start+'T12:00:00+07:00');d.setUTCDate(d.getUTCDate()+i);list.push(new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Ho_Chi_Minh',year:'numeric',month:'2-digit',day:'2-digit'}).format(d))}return [...new Set([...list,...boardEvents.map(e=>e.event_date)])].sort()}
+function renderLiveBoard(){
+ const dates=boardDates();if(!dates.includes(boardDay))boardDay=boardEvents[0]?.event_date||today();
+ $('#calendarTitle').textContent='Lịch ra sân · '+new Intl.DateTimeFormat('vi-VN',{month:'long',year:'numeric'}).format(new Date(boardDay+'T12:00:00'));
+ $('#days').innerHTML=dates.map(date=>{const d=new Date(date+'T12:00:00');return `<button class="day ${date===boardDay?'active':''}" data-board-day="${date}" aria-pressed="${date===boardDay}" aria-label="${esc(fmtDate(date))}"><small>${esc(new Intl.DateTimeFormat('vi-VN',{weekday:'short'}).format(d))}</small><strong>${d.getDate()}/${d.getMonth()+1}</strong><span class="day-dot" style="visibility:${boardEvents.some(e=>e.event_date===date)?'visible':'hidden'}"></span></button>`}).join('');
+ const list=boardEvents.filter(e=>e.event_date===boardDay&&boardLevelMatch(e));$('#result-count').textContent=`${list.length} kèo · ${fmtDate(boardDay)}`;
+ $('#events').innerHTML=list.length?list.map(e=>`<article class="match-row"><div class="match-time">${esc((e.start_time||'').slice(0,5))}<small>đến ${esc((e.end_time||'').slice(0,5))}</small></div><div class="match-detail"><h3>${esc(e.title)}</h3><p><span class="level">${esc(e.level_range||'Mọi trình độ')}</span>${esc(e.venue)}</p><p>${e.venue_address?esc(e.venue_address)+' · ':''}Nam ${Number(e.male_fee||0)}k / Nữ ${Number(e.female_fee||0)}k</p>${mapsButton(e.google_maps_url)}</div><div class="availability"><strong>${e.is_cancelled?'Kèo đã hủy':!e.is_open?'Đã đóng đăng ký':boardRemaining(e)?`Còn ${boardRemaining(e)} chỗ`:'Đã đủ người'}</strong><small>${boardCount(e)}/${Number(e.total_slots||10)} đã đăng ký</small><div class="progress"><i style="width:${Math.min(100,boardCount(e)/Math.max(1,Number(e.total_slots||10))*100)}%"></i></div><button class="view-players" data-board-players="${esc(e.id)}">Xem danh sách ↗</button></div><button class="button dark" data-board-register="${esc(e.id)}" ${boardOpen(e)?'':'disabled'}>${boardOpen(e)?'Giữ chỗ ↗':'Đã đóng'}</button></article>`).join(''):'<div class="empty">Chưa có kèo phù hợp. Thử chọn ngày hoặc trình độ khác nhé.</div>';
+ const next=boardEvents.find(boardOpen)||boardEvents[0];
+ $('#nearestMatch').innerHTML=next?`<div class="next-top"><span><i class="dot"></i> KÈO GẦN NHẤT</span><span>TBY MATCH</span></div><div class="live-court"><span>SEE YOU<br>ON COURT.</span></div><div class="next-info"><div class="next-date"><b>${esc(next.event_date.slice(8))}</b><span>THÁNG ${esc(next.event_date.slice(5,7))}</span></div><div><span class="tag">${esc(fmtDate(next.event_date))} · ${esc((next.start_time||'').slice(0,5))}</span><h2>${esc(next.title)}</h2><p>${esc(next.venue)} · ${esc(next.level_range||'')}</p></div></div><button class="hero-players" data-board-players="${esc(next.id)}">${boardCount(next)}/${Number(next.total_slots||10)} đã đăng ký · Xem danh sách ↗</button><div class="next-bottom"><span><strong>${boardOpen(next)?`Còn ${boardRemaining(next)} chỗ`:'Đăng ký đã đóng'}</strong></span><button class="button lime" data-board-register="${esc(next.id)}" ${boardOpen(next)?'':'disabled'}>Giữ chỗ ngay ↗</button></div>`:'<div class="live-state">Chưa có kèo mới.<br>Hẹn bạn sớm trên sân!</div>';
+}
+$('#days').addEventListener('click',e=>{const b=e.target.closest('[data-board-day]');if(b){boardDay=b.dataset.boardDay;renderLiveBoard()}});
+document.querySelectorAll('[data-level]').forEach(b=>b.addEventListener('click',()=>{boardLevel=b.dataset.level;document.querySelectorAll('[data-level]').forEach(x=>{x.classList.toggle('active',x===b);x.setAttribute('aria-pressed',String(x===b))});renderLiveBoard()}));
+const publicList=document.createElement('dialog');publicList.className='participants-dialog';publicList.setAttribute('aria-label','Danh sách người đăng ký');document.body.append(publicList);
+document.addEventListener('click',e=>{
+ const reg=e.target.closest('[data-board-register]');if(reg&&!reg.disabled){openRegister(reg.dataset.boardRegister);return;}
+ const btn=e.target.closest('[data-board-players]');if(!btn)return;const game=boardEvents.find(x=>String(x.id)===btn.dataset.boardPlayers);if(!game)return;
+ const players=Array.isArray(game.players)?game.players:[];
+ publicList.innerHTML=`<button class="close" aria-label="Đóng">×</button><span class="eyebrow">ĐỒNG ĐỘI TRÊN SÂN</span><h2>${esc(game.title)}</h2><p>${esc(fmtDate(game.event_date))} · ${boardCount(game)}/${Number(game.total_slots||10)} đã đăng ký</p><div class="participant-row participant-heading"><span>STT</span><span>Tên người chơi</span><span>Trình độ</span></div>${players.length?players.map((p,i)=>`<div class="participant-row"><span>${i+1}</span><span>${esc(p.full_name||'Người chơi')}</span><span>${esc(p.level||'—')}</span></div>`).join(''):'<p>Chưa có danh sách công khai.</p>'}<p class="sample-note">Chỉ hiển thị tên và trình độ. Danh sách cập nhật khi tải lại lịch.</p>`;
+ publicList.querySelector('.close').onclick=()=>publicList.close();publicList.showModal();
+});
+document.querySelectorAll('.lookup').forEach(b=>b.addEventListener('click',()=>{$('#tra-cuu-dang-ky').scrollIntoView({behavior:'smooth'});$('#registrationLookupInput').focus({preventScroll:true})}));
+
 async function loadEvents(){
   const root=$('#events');
-  if(!supabase){root.innerHTML='<div class="empty-card">Chưa cấu hình Supabase.</div>';return;}
+  if(!supabase){root.innerHTML='<div class="empty-card">Chưa cấu hình Supabase trong config.js.</div>';$('#nearestMatch').innerHTML='<div class="live-state">Chưa cấu hình kết nối dữ liệu.</div>';return;}
   root.innerHTML='<div class="empty-card">Đang tải lịch kèo…</div>';
   const {data,error}=await supabase.from('events_public').select('*').gte('event_date',today()).order('event_date').order('start_time');
-  if(error){root.innerHTML=`<div class="empty-card">Lỗi tải dữ liệu: ${esc(error.message)}</div>`;return;}
-  if(!data?.length){root.innerHTML='<div class="empty-card">Hiện chưa có kèo mới.</div>';return;}
+  if(error){$('#nearestMatch').innerHTML='<div class="live-state">Không tải được kèo. Hãy tải lại trang.</div>';root.innerHTML=`<div class="empty-card">Lỗi tải dữ liệu: ${esc(error.message)}</div>`;return;}
+  if(!data?.length){boardEvents=[];renderLiveBoard();return;}
   const {data:mapRows,error:mapError}=await supabase.rpc('public_event_maps',{p_event_ids:data.map(e=>e.id)});
   if(mapError)console.warn('Không tải được link Google Maps:',mapError.message);
   const mapLinks=new Map((mapRows||[]).map(e=>[e.id,e.google_maps_url]));
   for(const event of data)event.google_maps_url=mapLinks.get(event.id)||'';
-  root.innerHTML=data.map(eventCard).join('');
-  root.querySelectorAll('[data-register]').forEach(btn=>btn.addEventListener('click',()=>openRegister(btn.dataset.register)));
-  root.querySelectorAll('[data-cancel-contact]').forEach(btn=>btn.addEventListener('click',showCancelSlotNotice));
-  root.querySelectorAll('[data-player-toggle]').forEach(btn=>btn.addEventListener('click',()=>{
-    const list=btn.closest('[data-player-list]');
-    if(!list)return;
-    const expanded=list.classList.toggle('expanded');
-    btn.textContent=expanded?'Thu gọn ↑':'Xem tất cả ›';
-  }));
+  boardEvents=data;renderLiveBoard();
 }
 function eventCard(e){
   const maleCount=Number(e.male_count||0);

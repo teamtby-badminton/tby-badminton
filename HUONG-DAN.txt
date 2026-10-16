@@ -1,9 +1,0 @@
-BẢN GỐC + LINH VẬT CHIBI VÀ 4 ĐỘNG TÁC MỚI
-
-Giải nén ZIP. Tải toàn bộ file bên trong và thư mục assets lên thư mục gốc GitHub, cùng cấp index.html; ghi đè file cùng tên. Không tải nguyên ZIP lên GitHub.
-Không cần sửa Supabase. Giữ cấu hình Supabase đang dùng nếu đã thay đổi config.js riêng.
-Sau khi GitHub Pages cập nhật, nhấn Ctrl + F5 để tải bản mới.
-Mở xem-thu-chibi.html để xem riêng động tác.
-Linh vật không có nút ẩn/hiện, không chặn thao tác. Bé nghỉ khi mở hộp thoại hoặc nhập liệu; tắt hoạt ảnh nếu thiết bị bật giảm chuyển động.
-
-Cập nhật: linh vật chỉ đi qua lại theo chiều ngang ở mép dưới cửa sổ, tự quay đầu khi đến hai bên.

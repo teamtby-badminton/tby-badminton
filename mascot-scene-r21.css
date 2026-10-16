@@ -1,0 +1,22 @@
+/* The walk cycle is rendered from directional chibi poses. */
+#tby-web-mascot{position:fixed;left:0;top:0;width:116px;height:116px;z-index:40;pointer-events:none;contain:layout style;will-change:transform}
+#tby-web-mascot[hidden]{display:none!important}
+#tby-web-mascot::before{content:'';position:absolute;left:28%;right:15%;bottom:3%;height:6%;border-radius:50%;background:#19344716;filter:blur(3px)}
+#tby-web-mascot .tby-mascot-sprite{display:block;width:100%;height:100%;background-repeat:no-repeat;background-size:400% 200%;background-position:33.333333% 0;transform-origin:50% 90%;filter:drop-shadow(0 1px 1px #173a4710)}
+#tby-web-mascot:not(.is-moving):not(.is-acting) .tby-mascot-sprite{animation:tby-chibi-breathe 2.6s ease-in-out infinite}
+@keyframes tby-chibi-breathe{0%,100%{transform:translateY(0) scaleY(1)}50%{transform:translateY(-.7px) scaleY(1.008)}}
+@media(max-width:760px){#tby-web-mascot{width:88px;height:88px}}
+#tby-mascot-buddy{position:fixed;left:0;top:0;width:116px;height:116px;z-index:41;pointer-events:none;contain:layout style;will-change:transform}
+#tby-mascot-buddy[hidden],#tby-mascot-shuttle[hidden]{display:none!important}
+#tby-mascot-buddy .tby-mascot-sprite{display:block;width:100%;height:100%;background-repeat:no-repeat;background-size:400% 200%;filter:drop-shadow(0 1px 1px #173a4710)}
+#tby-mascot-buddy::before{content:'';position:absolute;left:28%;right:15%;bottom:3%;height:6%;border-radius:50%;background:#19344716;filter:blur(3px)}
+#tby-mascot-shuttle{position:fixed;left:0;top:0;width:26px;height:20px;z-index:42;pointer-events:none;transform-origin:50% 50%;filter:drop-shadow(0 1px 2px #10305055);will-change:transform}
+@media(max-width:760px){#tby-mascot-buddy{width:88px;height:88px}}
+#tby-mascot-buddy .tby-mascot-sprite{position:relative}
+.tby-lobster-walk-hat{position:absolute;left:13%;top:-30%;width:85%;height:85%;background-repeat:no-repeat;background-size:200% 100%;pointer-events:none}
+.tby-lobster-walk-hat[hidden]{display:none!important}
+
+
+#tby-mascot-spectators{position:fixed;left:0;top:0;z-index:39;pointer-events:none;contain:layout style;will-change:transform}
+#tby-mascot-spectators[hidden]{display:none!important}
+#tby-mascot-spectators .tby-audience-sprite{display:block;width:100%;height:100%;background-size:200% 200%;background-repeat:no-repeat}

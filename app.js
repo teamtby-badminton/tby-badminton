@@ -70,6 +70,11 @@ async function loadEvents(){
   root.innerHTML='<div class="empty-card">Đang tải lịch kèo…</div>';
   const {data,error}=await supabase.from('events_public').select('*').gte('event_date',today()).order('event_date').order('start_time');
   if(error){root.innerHTML=`<div class="empty-card">Lỗi tải dữ liệu: ${esc(error.message)}</div>`;return;}
+  if($('#registerDialog').open){
+    const selected=(data||[]).find(event=>event.id===$('#eventId').value);
+    if(selected)applyRegistrationEvent(selected,true);
+    else void refreshOpenRegistration();
+  }
   if(!data?.length){root.innerHTML='<div class="empty-card">Hiện chưa có kèo mới.</div>';return;}
   const {data:mapRows,error:mapError}=await supabase.rpc('public_event_maps',{p_event_ids:data.map(e=>e.id)});
   if(mapError)console.warn('Không tải được link Google Maps:',mapError.message);
@@ -208,17 +213,54 @@ function setRegistrationLevels(range){
 }
 // End of event-level filtering helpers.
 
-async function openRegister(id){
-  const {data,error}=await supabase.from('events_public').select('*').eq('id',id).single();
-  if(error)return alert(error.message); if(data.is_cancelled)return alert('Kèo này đã được hủy.');
+let registrationSnapshot='',registrationOpenRequest=0,registrationRefreshing=false;
+function applyRegistrationEvent(data,notify=false){
+  if($('#submitRegister').textContent==='Đang đăng ký…')return;
+  const previous=$('#level').value;
+  const snapshot=JSON.stringify([data.id,data.title,data.venue,data.venue_address,data.event_date,data.start_time,data.end_time,data.level_range,data.is_open,data.is_cancelled]);
+  if(snapshot===registrationSnapshot)return;
+  const hadSnapshot=!!registrationSnapshot;
+  registrationSnapshot=snapshot;
+  const id=data.id;
   $('#eventId').value=id;$('#registerTitle').textContent=data.title;
   const addr=data.venue_address?`<br>📌 ${esc(data.venue_address)}`:'';
   $('#eventSummary').innerHTML=`📍 <b>${esc(data.venue)}</b>${addr}<br>📅 ${esc(fmtDate(data.event_date))}<br>🕒 ${esc(data.start_time.slice(0,5))} – ${esc(data.end_time.slice(0,5))}<br>🏸 ${esc(data.level_range)}`;
   const allowed=setRegistrationLevels(data.level_range);
   $('#registerMsg').className=allowed.length?'form-msg':'form-msg err';
   $('#registerMsg').textContent=allowed.length?'':'Kèo chưa có trình tuyển hợp lệ. Vui lòng liên hệ quản trị viên.';
-$('#registerDialog').showModal();
+
+  if(allowed.includes(previous))$('#level').value=previous;
+  if(data.is_cancelled||data.is_open===false){
+    $('#level').disabled=true;$('#submitRegister').disabled=true;
+    $('#registerMsg').className='form-msg err';$('#registerMsg').textContent='Kèo này đã đóng hoặc hủy.';
+  }else if(notify&&hadSnapshot&&allowed.length){
+    $('#registerMsg').className='form-msg';
+    $('#registerMsg').textContent=allowed.includes(previous)?'Thông tin kèo đã được cập nhật.':'Trình tuyển đã thay đổi. Bạn kiểm tra lại trình đã chọn nhé.';
+  }
 }
+async function refreshOpenRegistration(){
+  if(!supabase||!$('#registerDialog').open||document.hidden||registrationRefreshing||$('#submitRegister').textContent==='Đang đăng ký…')return;
+  const id=$('#eventId').value,request=registrationOpenRequest;
+  if(!id)return;
+  registrationRefreshing=true;
+  try{
+    const {data,error}=await supabase.from('events_public').select('*').eq('id',id).single();
+    if(!error&&data&&request===registrationOpenRequest&&$('#registerDialog').open&&$('#eventId').value===id)applyRegistrationEvent(data,true);
+  }catch(err){console.warn('Không làm mới được kèo:',err.message);}
+  finally{registrationRefreshing=false;}
+}
+async function openRegister(id){
+  const request=++registrationOpenRequest;
+  const {data,error}=await supabase.from('events_public').select('*').eq('id',id).single();
+  if(request!==registrationOpenRequest)return;
+  if(error)return alert(error.message);if(data.is_cancelled)return alert('Kèo này đã được hủy.');
+  registrationSnapshot='';$('#level').value='';
+  applyRegistrationEvent({...data,id});
+  if(!$('#registerDialog').open)$('#registerDialog').showModal();
+}
+setInterval(refreshOpenRegistration,5000);
+window.addEventListener('focus',()=>void refreshOpenRegistration());
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)void refreshOpenRegistration();});
 // Gửi thông báo Discord sau khi Supabase đã đăng ký thành công.
 // Webhook thật được giữ trong Supabase Secret DISCORD_WEBHOOK_URL, không nằm trong source GitHub Pages.
 async function notifyDiscordRegistration(payload, registrationData={}){
@@ -489,6 +531,7 @@ $('#eventForm').addEventListener('submit',async ev=>{
   try{
     let eventId=id;
     if(id){const {error}=await supabase.from('events').update(p).eq('id',id);if(error)throw error;}else{const createPayload={...p,is_cancelled:false,is_open:currentAdminRole==='owner'?$('#eOpen').checked:true};const {data,error}=await supabase.from('events').insert(createPayload).select('id').single();if(error)throw error;eventId=data.id;}
+    if($('#registerDialog').open&&$('#eventId').value===eventId){registrationSnapshot='';await refreshOpenRegistration();}
     const {error:courtErr}=await supabase.rpc('admin_set_event_court',{p_event_id:eventId,p_court_number:$('#eCourtNumber').value.trim()||null});
     if(courtErr)throw courtErr;
     if(pendingRemoveEventImage&&old?.image_url){await removeMediaUrl(old.image_url);const {error}=await supabase.from('events').update({image_url:null}).eq('id',eventId);if(error)throw error;}

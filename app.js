@@ -175,13 +175,48 @@ return `<div class="player ${i>=3?'player-extra':''}">
     </div>
   </article>`;
 }
+const PLAYER_LEVELS = ['Yếu','Yếu+','TBY','TB-','TB','TB+','Khá'];
+function normalizeLevelText(value){
+  return String(value??'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/đ/gi,'d').toUpperCase().replace(/[–—−]/g,'-').trim();
+}
+function allowedPlayerLevels(value){
+  const text=normalizeLevelText(value),keys=PLAYER_LEVELS.map(normalizeLevelText);
+  const single=keys.indexOf(text);
+  if(single>=0)return [PLAYER_LEVELS[single]];
+  const rank='(YEU\\+?|TBY|TB[+-]?|KHA)';
+  const range=text.match(new RegExp('^'+rank+'\\s*(?:→|->|⇒|DEN|TOI|-)\\s*'+rank+'$'));
+  if(range){
+    const from=keys.indexOf(range[1]),to=keys.indexOf(range[2]);
+    return from<=to?PLAYER_LEVELS.slice(from,to+1):[];
+  }
+  const parts=text.split(/\s*(?:,|;|\/|&|\bVA\b)\s*/);
+  if(parts.length<2||parts.some(part=>!keys.includes(part)))return [];
+  return PLAYER_LEVELS.filter((level,index)=>parts.includes(keys[index]));
+}
+function setRegistrationLevels(range){
+  const allowed=allowedPlayerLevels(range),select=$('#level');
+  select.replaceChildren();
+  for(const level of allowed){
+    const option=document.createElement('option');option.value=level;option.textContent=level;select.append(option);
+  }
+  if(!allowed.length){
+    const option=document.createElement('option');option.value='';option.textContent='Chưa xác định trình tuyển';select.append(option);
+  }
+  select.disabled=!allowed.length;
+  $('#submitRegister').disabled=!allowed.length;
+  return allowed;
+}
+// End of event-level filtering helpers.
+
 async function openRegister(id){
   const {data,error}=await supabase.from('events_public').select('*').eq('id',id).single();
   if(error)return alert(error.message); if(data.is_cancelled)return alert('Kèo này đã được hủy.');
   $('#eventId').value=id;$('#registerTitle').textContent=data.title;
   const addr=data.venue_address?`<br>📌 ${esc(data.venue_address)}`:'';
   $('#eventSummary').innerHTML=`📍 <b>${esc(data.venue)}</b>${addr}<br>📅 ${esc(fmtDate(data.event_date))}<br>🕒 ${esc(data.start_time.slice(0,5))} – ${esc(data.end_time.slice(0,5))}<br>🏸 ${esc(data.level_range)}`;
-  $('#registerMsg').textContent='';
+  const allowed=setRegistrationLevels(data.level_range);
+  $('#registerMsg').className=allowed.length?'form-msg':'form-msg err';
+  $('#registerMsg').textContent=allowed.length?'':'Kèo chưa có trình tuyển hợp lệ. Vui lòng liên hệ quản trị viên.';
 $('#registerDialog').showModal();
 }
 // Gửi thông báo Discord sau khi Supabase đã đăng ký thành công.
@@ -214,6 +249,20 @@ async function notifyDiscordRegistration(payload, registrationData={}){
 $('#registerForm').addEventListener('submit',async ev=>{
   ev.preventDefault();const btn=$('#submitRegister');btn.disabled=true;btn.textContent='Đang đăng ký…';
   const payload={event_id:$('#eventId').value,full_name:$('#fullName').value.trim(),gender:$('#gender').value,level:$('#level').value,phone:$('#phone').value.trim(),note:$('#note').value.trim()};
+  // Re-read this event before sending, in case the admin changed its level range.
+  try{
+    const {data:event,error:fetchError}=await supabase.from('events_public').select('level_range,is_cancelled,is_open').eq('id',payload.event_id).single();
+    if(fetchError)throw fetchError;
+    if(event.is_cancelled||event.is_open===false)throw new Error('Kèo này đã đóng hoặc hủy.');
+    const allowed=allowedPlayerLevels(event.level_range);
+    if(!allowed.includes(payload.level)){
+      setRegistrationLevels(event.level_range);
+      throw new Error(allowed.length?'Trình tuyển của kèo đã thay đổi. Vui lòng chọn lại trình phù hợp.':'Kèo chưa có trình tuyển hợp lệ. Vui lòng liên hệ quản trị viên.');
+    }
+  }catch(err){
+    const msg=$('#registerMsg');msg.className='form-msg err';msg.textContent=err.message||'Không kiểm tra được trình tuyển. Vui lòng thử lại.';
+    btn.disabled=$('#level').disabled;btn.textContent='🏸 Đăng ký slot';return;
+  }
   const {data,error}=await supabase.rpc('register_player',payload);const msg=$('#registerMsg');
   if(error){
     msg.className='form-msg err';msg.textContent=error.message;
@@ -428,6 +477,9 @@ async function removeMediaUrl(url){const p=storagePathFromUrl(url);if(p)await su
 $('#eventForm').addEventListener('submit',async ev=>{
   ev.preventDefault();if(!currentAdminUser||!['owner','admin'].includes(currentAdminRole))return alert('Chỉ Owner/Admin mới được chỉnh kèo.');
   const id=$('#editingEventId').value||null;const old=id?currentAdminEvents.find(x=>x.id===id):null;
+  if(!allowedPlayerLevels($('#eLevel').value).length){
+    $('#adminMsg').className='form-msg err';$('#adminMsg').textContent='Nhập trình tuyển như TBY → TB-, một trình như TB, hoặc danh sách như TBY, TB-. Khoảng trình cần đi từ thấp đến cao.';return;
+  }
   const rawMapsUrl=$('#eGoogleMapsUrl').value.trim();
   if(rawMapsUrl&&!mapsUrl(rawMapsUrl)){
     $('#adminMsg').className='form-msg err';$('#adminMsg').textContent='Link Google Maps phải là URL đầy đủ bắt đầu bằng https:// hoặc http://.';return;
@@ -526,7 +578,9 @@ function editRegistration(row,eventId){
     <div class="admin-actions"><button type="submit" class="btn btn-primary">Lưu thay đổi</button><button type="button" class="btn btn-ghost" data-dismiss>Hủy</button></div>
   </form>`;
   const form=dialog.querySelector('form'),fields=form.elements;
-  for(const option of $('#level').options)fields.namedItem('level').append(option.cloneNode(true));
+  for(const level of PLAYER_LEVELS){
+    const option=document.createElement('option');option.value=level;option.textContent=level;fields.namedItem('level').append(option);
+  }
   // Keep historical levels selectable even if the registration form has changed.
   if(row.level&&!Array.from(fields.namedItem('level').options).some(o=>o.value===row.level)){
     const option=document.createElement('option');option.value=row.level;option.textContent=row.level;

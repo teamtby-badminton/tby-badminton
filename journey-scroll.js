@@ -23,6 +23,7 @@
     element.style.setProperty('--scene-shift', `${shift.toFixed(1)}px`);
     element.classList.toggle('is-active', active);
     element.setAttribute('aria-hidden', active ? 'false' : 'true');
+    if ('inert' in element) element.inert = !active;
   };
 
   const update = () => {
@@ -44,20 +45,20 @@
     hero.style.setProperty('--journey-bg-x', `${(78 - progress * 24).toFixed(2)}%`);
     hero.style.setProperty('--journey-bg-scale', (1.015 + progress * 0.035).toFixed(4));
 
-    const introOpacity = 1 - smooth(0.12, 0.29, progress);
+    const introOpacity = 1 - smooth(0.1, 0.27, progress);
     heroInner.style.setProperty('--hero-intro-opacity', introOpacity.toFixed(3));
     heroInner.style.setProperty('--hero-intro-shift', `${((1 - introOpacity) * -54).toFixed(1)}px`);
     heroInner.style.setProperty('--hero-intro-scale', (0.96 + introOpacity * 0.04).toFixed(4));
     heroInner.style.setProperty('--hero-intro-blur', `${((1 - introOpacity) * 9).toFixed(1)}px`);
     heroInner.classList.toggle('is-inactive', introOpacity < 0.18);
 
-    const sceneTwoIn = smooth(0.22, 0.36, progress);
-    const sceneTwoOut = 1 - smooth(0.51, 0.64, progress);
+    const sceneTwoIn = smooth(0.2, 0.33, progress);
+    const sceneTwoOut = 1 - smooth(0.58, 0.72, progress);
     const sceneTwoOpacity = sceneTwoIn * sceneTwoOut;
-    setScene(sceneTwo, sceneTwoOpacity, 62 - smooth(0.22, 0.64, progress) * 108, sceneTwoOpacity > 0.55);
+    setScene(sceneTwo, sceneTwoOpacity, 58 - smooth(0.2, 0.72, progress) * 102, sceneTwoOpacity > 0.5);
 
-    const sceneThreeOpacity = smooth(0.58, 0.74, progress);
-    setScene(sceneThree, sceneThreeOpacity, 72 - smooth(0.58, 0.82, progress) * 72, sceneThreeOpacity > 0.55);
+    const sceneThreeOpacity = smooth(0.54, 0.68, progress);
+    setScene(sceneThree, sceneThreeOpacity, 66 - smooth(0.54, 0.78, progress) * 66, sceneThreeOpacity > 0.5);
 
     if (progressNumber) {
       progressNumber.textContent = progress < 0.3 ? '01' : progress < 0.65 ? '02' : '03';

@@ -2,14 +2,26 @@ const mount = document.getElementById('hero3d');
 const hero = document.getElementById('heroSection');
 
 if (mount && hero) {
-  import('https://cdn.jsdelivr.net/npm/three@0.164.1/build/three.module.min.js')
-    .catch(() => import('https://unpkg.com/three@0.164.1/build/three.module.js'))
-    .catch(() => import('./assets/vendor/three.module.min.js'))
-    .then((THREE) => {
-      hero.classList.add('hero-three-loaded');
-      initHero3D(THREE);
-    })
-    .catch(() => hero.classList.add('hero-3d-fallback'));
+  let started = false;
+  const startHero3D = () => {
+    if (started) return;
+    started = true;
+    import('https://cdn.jsdelivr.net/npm/three@0.164.1/build/three.module.min.js')
+      .catch(() => import('https://unpkg.com/three@0.164.1/build/three.module.js'))
+      .catch(() => import('./assets/vendor/three.module.min.js'))
+      .then((THREE) => {
+        hero.classList.add('hero-three-loaded');
+        initHero3D(THREE);
+      })
+      .catch(() => hero.classList.add('hero-3d-fallback'));
+  };
+
+  const intro = document.getElementById('tbyIntro');
+  if (intro && !intro.hidden) {
+    intro.addEventListener('tby:intro-exit', () => window.setTimeout(startHero3D, 520), { once: true });
+  } else {
+    startHero3D();
+  }
 }
 
 function initHero3D(THREE) {
@@ -175,6 +187,8 @@ function initHero3D(THREE) {
       -3.2 + ((i * 2.29) % 6.2)
     );
     particle.userData.phase = i * 0.77;
+    particle.userData.baseY = particle.position.y;
+    particle.userData.baseZ = particle.position.z;
     particles.add(particle);
   }
   world.add(particles);
@@ -237,8 +251,8 @@ function initHero3D(THREE) {
       court.material.opacity = 0.2 + progress * 0.1;
       net.material.opacity = 0.18 + progress * 0.13;
       particles.children.forEach((particle) => {
-        particle.position.y += Math.sin(elapsed * 0.7 + particle.userData.phase) * (0.0008 + progress * 0.0022);
-        particle.position.z += progress * 0.002;
+        particle.position.y = particle.userData.baseY + Math.sin(elapsed * 0.7 + particle.userData.phase) * (0.09 + progress * 0.08);
+        particle.position.z = particle.userData.baseZ + progress * 0.48;
       });
     }
     camera.lookAt(2.1 - easedProgress * 1.1, -1.0 + easedProgress * .25, 0);

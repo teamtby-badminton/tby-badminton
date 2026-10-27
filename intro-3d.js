@@ -273,6 +273,7 @@ function initIntroScene(THREE, context) {
   let frame = 0;
   let disposed = false;
   let exitProgress = 0;
+  let pageVisible = !document.hidden;
 
   const resize = () => {
     const width = Math.max(1, window.innerWidth);
@@ -310,7 +311,10 @@ function initIntroScene(THREE, context) {
   };
 
   const render = () => {
-    if (disposed) return;
+    if (disposed || !pageVisible) {
+      frame = 0;
+      return;
+    }
     const elapsed = clock.getElapsedTime();
     const exitSpeed = isExiting() ? 5.2 : 1;
     if (isExiting()) exitProgress = Math.min(1, exitProgress + 0.025);
@@ -350,7 +354,17 @@ function initIntroScene(THREE, context) {
 
     camera.lookAt(pointer.x * -0.15, pointer.y * 0.08, -1.3);
     renderer.render(scene, camera);
-    frame = requestAnimationFrame(render);
+    if (pageVisible) frame = requestAnimationFrame(render);
+  };
+
+  const onVisibilityChange = () => {
+    pageVisible = !document.hidden;
+    if (!pageVisible && frame) {
+      cancelAnimationFrame(frame);
+      frame = 0;
+    } else if (pageVisible && !frame && !disposed && !reducedMotion.matches) {
+      frame = requestAnimationFrame(render);
+    }
   };
 
   const dispose = () => {
@@ -358,6 +372,7 @@ function initIntroScene(THREE, context) {
     disposed = true;
     if (frame) cancelAnimationFrame(frame);
     window.removeEventListener('resize', resize);
+    document.removeEventListener('visibilitychange', onVisibilityChange);
     intro.removeEventListener('pointermove', onPointerMove);
     scene.traverse((object) => {
       if (object.geometry) object.geometry.dispose();
@@ -370,6 +385,7 @@ function initIntroScene(THREE, context) {
   };
 
   window.addEventListener('resize', resize, { passive: true });
+  document.addEventListener('visibilitychange', onVisibilityChange, { passive: true });
   if (!coarsePointer && !reducedMotion.matches) {
     intro.addEventListener('pointermove', onPointerMove, { passive: true });
   }

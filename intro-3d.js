@@ -36,7 +36,9 @@ if (intro && enterButton) {
   window.setTimeout(() => enterButton.focus({ preventScroll: true }), 500);
 
   if (mount) {
-    import('./assets/vendor/three.module.min.js')
+    import('https://cdn.jsdelivr.net/npm/three@0.164.1/build/three.module.min.js')
+      .catch(() => import('https://unpkg.com/three@0.164.1/build/three.module.js'))
+      .catch(() => import('./assets/vendor/three.module.min.js'))
       .then((THREE) => initIntroScene(THREE, { intro, mount, reducedMotion, isExiting: () => exiting }))
       .catch(() => intro.classList.add('intro-3d-fallback'));
   }
@@ -275,10 +277,31 @@ function initIntroScene(THREE, context) {
   const resize = () => {
     const width = Math.max(1, window.innerWidth);
     const height = Math.max(1, window.innerHeight);
+    const compact = width < 700;
     renderer.setSize(width, height, false);
     camera.aspect = width / height;
-    camera.fov = width < 700 ? 52 : 42;
+    camera.fov = compact ? 52 : 42;
     camera.updateProjectionMatrix();
+
+    if (compact) {
+      shuttle.position.x = 2.28;
+      shuttle.userData.baseY = -1.62;
+      shuttle.position.z = -0.3;
+      shuttle.scale.setScalar(1.28);
+      racket.position.x = -2.3;
+      racket.userData.baseY = 0.58;
+      racket.position.z = -1.15;
+      racket.scale.setScalar(0.72);
+    } else {
+      shuttle.position.x = 4.3;
+      shuttle.userData.baseY = -0.85;
+      shuttle.position.z = 0.55;
+      shuttle.scale.setScalar(1.85);
+      racket.position.x = -4.4;
+      racket.userData.baseY = 0.35;
+      racket.position.z = -0.2;
+      racket.scale.setScalar(1.04);
+    }
   };
 
   const onPointerMove = (event) => {
@@ -302,10 +325,10 @@ function initIntroScene(THREE, context) {
       world.rotation.x = pointer.y * 0.042;
       heroObjects.position.z = exitProgress * 2.8;
       heroObjects.rotation.z = pointer.x * -0.025;
-      shuttle.position.y = -0.85 + Math.sin(elapsed * 1.15) * 0.28;
+      shuttle.position.y = (shuttle.userData.baseY ?? -0.85) + Math.sin(elapsed * 1.15) * 0.28;
       shuttle.rotation.y = -0.52 + elapsed * 0.32 * exitSpeed + pointer.x * 0.18;
       shuttle.rotation.z = 0.74 + Math.sin(elapsed * 0.72) * 0.09;
-      racket.position.y = 0.35 + Math.sin(elapsed * 0.78 + 1.2) * 0.22;
+      racket.position.y = (racket.userData.baseY ?? 0.35) + Math.sin(elapsed * 0.78 + 1.2) * 0.22;
       racket.rotation.y = 0.32 + Math.sin(elapsed * 0.55) * 0.16 - pointer.x * 0.14;
       racket.rotation.x = -0.18 + pointer.y * 0.12;
       halo.rotation.z = -0.13 + elapsed * 0.055;

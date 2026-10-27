@@ -2,7 +2,9 @@ const mount = document.getElementById('hero3d');
 const hero = document.getElementById('heroSection');
 
 if (mount && hero) {
-  import('./assets/vendor/three.module.min.js')
+  import('https://cdn.jsdelivr.net/npm/three@0.164.1/build/three.module.min.js')
+    .catch(() => import('https://unpkg.com/three@0.164.1/build/three.module.js'))
+    .catch(() => import('./assets/vendor/three.module.min.js'))
     .then((THREE) => {
       hero.classList.add('hero-three-loaded');
       initHero3D(THREE);

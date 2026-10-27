@@ -8,9 +8,9 @@
   <meta name="description" content="Trang đăng ký slot vãng lai TBY" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Outfit:wght@500;600;700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="./styles.css?v=modern-2" />
-  <link rel="stylesheet" href="./theme.css?v=performance-1" />
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./styles.css?v=modern-3" />
+  <link rel="stylesheet" href="./theme.css?v=performance-3" />
 
   <script>
     window.addEventListener('DOMContentLoaded', function(){
@@ -20,9 +20,33 @@
   </script>
 
   <link rel="stylesheet" href="./mascot-scene-r21.css" />
-  <link rel="stylesheet" href="./success-mascot.css?v=1" />
+  <link rel="stylesheet" href="./success-mascot.css?v=2" />
 </head>
 <body>
+  <section id="tbyIntro" class="tby-intro" aria-labelledby="introTitle">
+    <div id="intro3d" class="tby-intro-3d" aria-hidden="true"></div>
+    <div class="intro-orbit intro-orbit-one" aria-hidden="true"></div>
+    <div class="intro-orbit intro-orbit-two" aria-hidden="true"></div>
+    <div class="intro-speed-lines" aria-hidden="true"></div>
+
+    <div class="tby-intro-content">
+      <img class="intro-logo" src="./assets/logo.png" alt="TBY Badminton Team" />
+      <p class="intro-eyebrow">TRAIN&nbsp;&nbsp;•&nbsp;&nbsp;BATTLE&nbsp;&nbsp;•&nbsp;&nbsp;YIELD</p>
+      <h1 id="introTitle" class="intro-title" aria-label="TBY">
+        <span>T</span><span>B</span><span>Y</span>
+      </h1>
+      <p class="intro-tagline">Có sân. Có kèo. Có đồng đội.</p>
+      <a id="introEnterBtn" class="intro-enter" href="#keo">
+        <span>Đăng ký ngay</span>
+        <span class="intro-enter-arrow" aria-hidden="true">↗</span>
+      </a>
+      <p class="intro-hint"><span></span> Chạm để bắt đầu hành trình</p>
+    </div>
+
+    <div class="intro-corner intro-corner-left" aria-hidden="true">TBY / 2026</div>
+    <div class="intro-corner intro-corner-right" aria-hidden="true">BADMINTON TEAM</div>
+  </section>
+
   <div id="morphStage" aria-hidden="true"><div class="m-fill"></div><div class="m-line"></div></div>
   <div id="scrollBar" aria-hidden="true"></div>
 
@@ -59,60 +83,48 @@
           <p class="hero-footnote">CÙNG RA SÂN. CÙNG TIẾN BỘ.</p>
         </div>
         <div class="hero-art" aria-hidden="true">
-          <div class="hero-match-preview">
+          <div class="hero-match-preview hero-brand-preview">
             <div class="match-preview-glow"></div>
-            <div class="match-preview-head">
-              <span class="match-badge-live"><span class="pulse-ring"></span>ĐANG MỞ ĐĂNG KÝ</span>
-              <span class="match-badge-level">Yếu+ → TB-</span>
+            <div class="hero-brand-top">
+              <img src="./assets/logo.png" alt="">
+              <span>TBY BADMINTON TEAM</span>
             </div>
-            <div class="match-preview-venue">
-              <div class="venue-icon">🏸</div>
-              <div>
-                <strong>Kèo Giao Lưu Tối Nay</strong>
-                <span>Dragon Prime Gym & Badminton</span>
+            <h3>Lên lịch. Giữ chỗ.<br>Ra sân.</h3>
+            <p>Thông tin chính xác của từng buổi cầu luôn được cập nhật tại mục <strong>Kèo sắp tới</strong>.</p>
+            <div class="hero-journey">
+              <div class="journey-step">
+                <span>01</span>
+                <strong>Chọn kèo</strong>
+                <small>Xem lịch bên dưới</small>
               </div>
-            </div>
-            <div class="match-preview-details">
-              <div class="detail-item">
-                <span class="detail-label">KHUNG GIỜ</span>
-                <span class="detail-val">19:00 – 21:00</span>
+              <div class="journey-step">
+                <span>02</span>
+                <strong>Đăng ký</strong>
+                <small>Điền thông tin</small>
               </div>
-              <div class="detail-item">
-                <span class="detail-label">CHI PHÍ</span>
-                <span class="detail-val">Nam 65k · Nữ 55k</span>
-              </div>
-            </div>
-            <div class="match-preview-slot">
-              <div class="slot-bar-head">
-                <span>TÌNH TRẠNG CHỖ</span>
-                <strong>Còn 3 / 10 slot trống</strong>
-              </div>
-              <div class="slot-bar-track">
-                <div class="slot-bar-fill" style="width: 70%;"></div>
+              <div class="journey-step">
+                <span>03</span>
+                <strong>Ra sân</strong>
+                <small>Cùng team TBY</small>
               </div>
             </div>
-            <div class="match-preview-footer">
-              <div class="preview-avatars">
-                <span class="avatar-chip">🏸 Minh</span>
-                <span class="avatar-chip">🏸 Tuấn</span>
-                <span class="avatar-chip">🏸 Mai</span>
-                <span class="avatar-more">+5</span>
-              </div>
-              <a href="#keo" class="btn-preview-cta">Giữ chỗ ngay ↗</a>
+            <div class="hero-brand-note">
+              <span class="pulse-ring"></span>
+              Dữ liệu buổi cầu hiển thị tại “Kèo sắp tới”
             </div>
           </div>
           <div class="hero-floating-badge badge-1">
-            <span class="badge-icon">⚡</span>
+            <span class="badge-icon">📅</span>
             <div>
-              <strong>Slot vãng lai</strong>
-              <small>Xác nhận tức thì</small>
+              <strong>Lịch buổi cầu</strong>
+              <small>Xem thông tin bên dưới</small>
             </div>
           </div>
           <div class="hero-floating-badge badge-2">
             <span class="badge-icon">🤝</span>
             <div>
-              <strong>100% Fair-play</strong>
-              <small>Cùng tiến bộ</small>
+              <strong>Team TBY</strong>
+              <small>Cùng chơi, cùng tiến bộ</small>
             </div>
           </div>
         </div>
@@ -411,6 +423,7 @@
   </dialog>
 
   <script src="./config.js"></script>
+  <script type="module" src="./intro-3d.js?v=1"></script>
   <script type="module" src="./hero-3d.js?v=1"></script>
   <script type="module" src="./app.js?v=levels-r23"></script>
   <script defer src="./motion.js?v=original-mascot-15"></script>

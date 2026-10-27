@@ -3,8 +3,8 @@
 #registrationSuccessDialog .success-dialog-card{padding:24px;max-height:calc(100dvh - 28px);background:#fff}
 .success-mascot{position:relative;width:114px;height:114px;margin:0 auto 8px}
 .success-mascot img{display:block;width:100%;height:100%;object-fit:contain;filter:drop-shadow(0 3px 3px #164a6b16)}
-.success-mascot-check{position:absolute;right:-4px;bottom:5px;display:grid;place-items:center;width:32px;height:32px;border:3px solid #fff;border-radius:50%;background:#00a348;color:#fff;font:bold 21px/1 Inter,system-ui,sans-serif;box-shadow:0 2px 7px #008c3c22}
-#registrationSuccessDialog .success-title{font-family:Inter,system-ui,sans-serif;font-size:23px;line-height:1.3;letter-spacing:0;color:#009b43;font-weight:800;text-align:center;margin:0 24px 7px}
+.success-mascot-check{position:absolute;right:-4px;bottom:5px;display:grid;place-items:center;width:32px;height:32px;border:3px solid #fff;border-radius:50%;background:#00a348;color:#fff;font:bold 21px/1 'Be Vietnam Pro','Segoe UI',Arial,sans-serif;box-shadow:0 2px 7px #008c3c22}
+#registrationSuccessDialog .success-title{font-family:'Be Vietnam Pro','Segoe UI',Arial,sans-serif;font-size:23px;line-height:1.3;letter-spacing:0;color:#009b43;font-weight:800;text-align:center;margin:0 24px 7px}
 #registrationSuccessDialog .success-subtitle{font-size:13px;line-height:1.6;margin:0 0 17px;text-align:center;color:#62788e}
 #registrationSuccessDialog .success-close{position:absolute;right:14px;top:14px;background:#f0f5fa;color:#123858}
 #registrationSuccessDialog .success-info{background:#fbfefd;padding:14px;border:1px solid #d6e8df;border-radius:14px}

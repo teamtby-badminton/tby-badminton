@@ -147,11 +147,14 @@ function initHero3D(THREE) {
   shuttle.scale.setScalar(1.7);
   world.add(shuttle);
 
-  const arcPoints = [];
-  for (let i = 0; i <= 36; i += 1) {
-    const t = i / 36;
-    arcPoints.push(new THREE.Vector3(-2.4 + t * 3.2, -0.15 + Math.sin(t * Math.PI) * 2.15, 0.8 - t * 1.2));
-  }
+  const flightCurve = new THREE.CatmullRomCurve3([
+    new THREE.Vector3(-3.8, -0.8, 2.1),
+    new THREE.Vector3(-2.2, 1.35, 1.1),
+    new THREE.Vector3(-0.35, 2.1, 0.25),
+    new THREE.Vector3(1.7, 1.05, -0.65),
+    new THREE.Vector3(3.7, -0.35, -1.35)
+  ]);
+  const arcPoints = flightCurve.getPoints(72);
   const arc = new THREE.Line(
     new THREE.BufferGeometry().setFromPoints(arcPoints),
     new THREE.LineBasicMaterial({ color: 0x10a94f, transparent: true, opacity: 0.22 })
@@ -184,18 +187,18 @@ function initHero3D(THREE) {
   const clock = new THREE.Clock();
 
   const resize = () => {
-    const rect = hero.getBoundingClientRect();
+    const rect = mount.getBoundingClientRect();
     width = Math.max(1, Math.round(rect.width));
     height = Math.max(1, Math.round(rect.height));
     renderer.setSize(width, height, false);
     camera.aspect = width / height;
     camera.fov = width < 700 ? 43 : 34;
     camera.updateProjectionMatrix();
-    camera.lookAt(2.5, -1.05, 0);
+    camera.lookAt(2.1, -1.0, 0);
   };
 
   const onPointerMove = (event) => {
-    const rect = hero.getBoundingClientRect();
+    const rect = mount.getBoundingClientRect();
     target.x = ((event.clientX - rect.left) / rect.width - 0.5) * 2;
     target.y = ((event.clientY - rect.top) / rect.height - 0.5) * 2;
   };
@@ -208,19 +211,35 @@ function initHero3D(THREE) {
     }
     lastFrameTime = frameTime;
     const elapsed = clock.getElapsedTime();
+    const progress = Math.min(1, Math.max(0, Number(hero.__journeyProgress) || 0));
+    const easedProgress = progress * progress * (3 - 2 * progress);
     if (!reducedMotion.matches) {
       pointer.x += (target.x - pointer.x) * 0.035;
       pointer.y += (target.y - pointer.y) * 0.035;
-      camera.position.x = 5.2 + pointer.x * 0.42;
-      camera.position.y = 4.7 - pointer.y * 0.22;
-      world.rotation.y = -0.14 + pointer.x * 0.025;
-      shuttle.position.y = 1.15 + Math.sin(elapsed * 1.25) * 0.12;
-      shuttle.rotation.y = -0.3 + elapsed * 0.22;
+      camera.position.x = 5.2 - easedProgress * 3.1 + pointer.x * 0.42;
+      camera.position.y = 4.7 - easedProgress * 1.3 - pointer.y * 0.22;
+      camera.position.z = 11.8 - easedProgress * 2.7;
+      world.position.x = 2.9 - easedProgress * 2.35;
+      world.position.y = 0.25 + Math.sin(progress * Math.PI) * 0.35;
+      world.rotation.y = -0.14 + easedProgress * 0.34 + pointer.x * 0.025;
+      world.rotation.z = -easedProgress * 0.055;
+
+      const flightPoint = flightCurve.getPointAt(Math.min(.999, progress));
+      shuttle.position.copy(flightPoint);
+      shuttle.position.y += Math.sin(elapsed * 1.25) * 0.12;
+      shuttle.rotation.x = 0.25 + Math.sin(progress * Math.PI) * 0.22;
+      shuttle.rotation.y = -0.3 + elapsed * (0.22 + progress * 0.65);
+      shuttle.rotation.z = 0.88 - progress * 0.42;
+      shuttle.scale.setScalar(1.7 + Math.sin(progress * Math.PI) * .42);
+      arc.material.opacity = 0.16 + Math.sin(progress * Math.PI) * 0.22;
+      court.material.opacity = 0.2 + progress * 0.1;
+      net.material.opacity = 0.18 + progress * 0.13;
       particles.children.forEach((particle) => {
-        particle.position.y += Math.sin(elapsed * 0.7 + particle.userData.phase) * 0.0008;
+        particle.position.y += Math.sin(elapsed * 0.7 + particle.userData.phase) * (0.0008 + progress * 0.0022);
+        particle.position.z += progress * 0.002;
       });
     }
-    camera.lookAt(2.5, -1.05, 0);
+    camera.lookAt(2.1 - easedProgress * 1.1, -1.0 + easedProgress * .25, 0);
     renderer.render(scene, camera);
     if (visible && !reducedMotion.matches) frame = requestAnimationFrame(render);
   };

@@ -10,7 +10,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="./styles.css?v=modern-3" />
-  <link rel="stylesheet" href="./theme.css?v=performance-3" />
+  <link rel="stylesheet" href="./theme.css?v=performance-5" />
 
   <script>
     window.addEventListener('DOMContentLoaded', function(){
@@ -23,7 +23,7 @@
   <link rel="stylesheet" href="./success-mascot.css?v=2" />
 </head>
 <body>
-  <section id="tbyIntro" class="tby-intro" aria-labelledby="introTitle">
+  <section id="tbyIntro" class="tby-intro" aria-label="TBY Badminton Team">
     <div id="intro3d" class="tby-intro-3d" aria-hidden="true"></div>
     <div class="intro-orbit intro-orbit-one" aria-hidden="true"></div>
     <div class="intro-orbit intro-orbit-two" aria-hidden="true"></div>
@@ -32,11 +32,8 @@
     <div class="tby-intro-content">
       <img class="intro-logo" src="./assets/logo.png" alt="TBY Badminton Team" />
       <p class="intro-eyebrow">TRAIN&nbsp;&nbsp;•&nbsp;&nbsp;BATTLE&nbsp;&nbsp;•&nbsp;&nbsp;YIELD</p>
-      <h1 id="introTitle" class="intro-title" aria-label="TBY">
-        <span>T</span><span>B</span><span>Y</span>
-      </h1>
       <p class="intro-tagline">Có sân. Có kèo. Có đồng đội.</p>
-      <a id="introEnterBtn" class="intro-enter" href="#keo">
+      <a id="introEnterBtn" class="intro-enter" href="#heroSection">
         <span>Đăng ký ngay</span>
         <span class="intro-enter-arrow" aria-hidden="true">↗</span>
       </a>
@@ -65,8 +62,9 @@
 
   <main id="top">
     <section class="hero" id="heroSection">
-      <div id="hero3d" class="hero-3d-layer" aria-hidden="true"></div>
-      <div class="container hero-content" id="heroInner">
+      <div class="hero-sticky">
+        <div id="hero3d" class="hero-3d-layer" aria-hidden="true"></div>
+        <div class="container hero-content" id="heroInner">
         <div class="hero-copy">
           <p class="hero-tag">TBY BADMINTON CLUB · TRAIN / BATTLE / YIELD</p>
           <h1 id="heroTitle">Chơi hết mình.<br/><span class="cyber-glow-text">Kết nối bền lâu.</span></h1>
@@ -128,8 +126,29 @@
             </div>
           </div>
         </div>
+        </div>
+
+        <div class="journey-scenes" aria-live="polite">
+          <article class="journey-scene journey-scene-two" data-journey-scene="2">
+            <span class="journey-kicker">CHẶNG 02 · CHỌN KÈO</span>
+            <h2>Đúng lịch.<br><span>Đúng trình.</span></h2>
+            <p>Xem sân, khung giờ, chi phí và số chỗ còn lại từ dữ liệu được cập nhật bên dưới.</p>
+          </article>
+          <article class="journey-scene journey-scene-three" data-journey-scene="3">
+            <span class="journey-kicker">CHẶNG 03 · RA SÂN</span>
+            <h2>Sẵn sàng<br><span>vào kèo?</span></h2>
+            <p>Chọn buổi cầu phù hợp và giữ chỗ chỉ trong vài bước.</p>
+            <a class="journey-cta" href="#keo">Xem kèo sắp tới <span>↓</span></a>
+          </article>
+        </div>
+
+        <div class="journey-progress" aria-hidden="true">
+          <span class="journey-progress-number">01</span>
+          <span class="journey-progress-track"><i></i></span>
+          <span>/03</span>
+        </div>
+        <div class="journey-scroll-cue" aria-hidden="true"><span></span> CUỘN ĐỂ BAY</div>
       </div>
-      
     </section>
 
     <div class="club-strip"><span>TBY BADMINTON CLUB</span><span>•</span><span>TRAIN WITH PURPOSE</span><span>•</span><span>BATTLE WITH PASSION</span><span>•</span><span>YIELD TOGETHER</span><span>•</span><span>100% FAIR PLAY</span><span>•</span><span>BETTER FRIENDS</span></div>
@@ -423,8 +442,9 @@
   </dialog>
 
   <script src="./config.js"></script>
-  <script type="module" src="./intro-3d.js?v=1"></script>
-  <script type="module" src="./hero-3d.js?v=1"></script>
+  <script type="module" src="./intro-3d.js?v=2"></script>
+  <script defer src="./journey-scroll.js?v=1"></script>
+  <script type="module" src="./hero-3d.js?v=2"></script>
   <script type="module" src="./app.js?v=levels-r23"></script>
   <script defer src="./motion.js?v=original-mascot-15"></script>
   <script defer src="./mascot-scene-r21.js"></script>

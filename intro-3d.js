@@ -22,7 +22,7 @@ if (intro && enterButton) {
       intro.setAttribute('aria-hidden', 'true');
       document.documentElement.classList.remove('intro-active');
       document.body.classList.remove('intro-active');
-      const destination = document.getElementById('keo');
+      const destination = document.getElementById('heroSection');
       if (destination) {
         destination.scrollIntoView({
           behavior: reducedMotion.matches ? 'auto' : 'smooth',
@@ -65,18 +65,21 @@ function initIntroScene(THREE, context) {
   mount.appendChild(renderer.domElement);
 
   const scene = new THREE.Scene();
-  scene.fog = new THREE.Fog(0xa9d7d4, 8, 30);
+  scene.fog = new THREE.Fog(0x9bd2d2, 13, 34);
 
   const camera = new THREE.PerspectiveCamera(42, 1, 0.1, 60);
-  camera.position.set(0, 0.4, 11.5);
+  camera.position.set(0, 0.35, 12.6);
 
-  scene.add(new THREE.HemisphereLight(0xf7ffff, 0x2a6fa2, 3.1));
+  scene.add(new THREE.HemisphereLight(0xf7ffff, 0x1765a8, 3.8));
   const keyLight = new THREE.DirectionalLight(0xffffff, 4.2);
   keyLight.position.set(-5, 7, 8);
   scene.add(keyLight);
-  const greenLight = new THREE.PointLight(0x49dc8a, 18, 18, 2);
-  greenLight.position.set(5, -1, 3);
+  const greenLight = new THREE.PointLight(0x35e594, 30, 22, 2);
+  greenLight.position.set(4.5, -1.5, 5);
   scene.add(greenLight);
+  const blueLight = new THREE.PointLight(0x2d91ff, 24, 20, 2);
+  blueLight.position.set(-5, 2.5, 4);
+  scene.add(blueLight);
 
   const world = new THREE.Group();
   scene.add(world);
@@ -124,29 +127,123 @@ function initIntroScene(THREE, context) {
   pathMesh.rotation.z = -0.08;
   world.add(pathMesh);
 
+  /* The hero objects intentionally use saturated brand colours and a larger
+     silhouette. The previous white wireframe disappeared into the pale sky. */
+  const heroObjects = new THREE.Group();
+  world.add(heroObjects);
+
   const shuttle = new THREE.Group();
   const cork = new THREE.Mesh(
-    new THREE.SphereGeometry(0.34, 24, 16),
-    new THREE.MeshStandardMaterial({ color: 0xf1f0df, roughness: 0.7 })
+    new THREE.SphereGeometry(0.36, 32, 20),
+    new THREE.MeshPhysicalMaterial({
+      color: 0x0871c8,
+      roughness: 0.24,
+      metalness: 0.08,
+      clearcoat: 1,
+      clearcoatRoughness: 0.16
+    })
   );
   cork.scale.set(1, 0.82, 1);
   shuttle.add(cork);
 
-  const skirtMaterial = new THREE.MeshPhysicalMaterial({
+  const skirtFill = new THREE.Mesh(
+    new THREE.ConeGeometry(0.94, 1.78, 18, 1, true),
+    new THREE.MeshPhysicalMaterial({
+      color: 0xeafff7,
+      roughness: 0.22,
+      transmission: 0.18,
+      transparent: true,
+      opacity: 0.42,
+      side: THREE.DoubleSide,
+      depthWrite: false
+    })
+  );
+  skirtFill.position.y = 1;
+  shuttle.add(skirtFill);
+
+  const skirtMaterial = new THREE.MeshBasicMaterial({
     color: 0xffffff,
-    roughness: 0.5,
     transparent: true,
-    opacity: 0.72,
+    opacity: 0.92,
     side: THREE.DoubleSide,
     wireframe: true
   });
-  const skirt = new THREE.Mesh(new THREE.ConeGeometry(0.82, 1.65, 14, 3, true), skirtMaterial);
-  skirt.position.y = 0.93;
+  const skirt = new THREE.Mesh(new THREE.ConeGeometry(0.96, 1.82, 18, 3, true), skirtMaterial);
+  skirt.position.y = 1.01;
   shuttle.add(skirt);
-  shuttle.position.set(3.9, -1.1, -0.8);
-  shuttle.rotation.set(0.3, -0.35, 0.82);
-  shuttle.scale.setScalar(1.12);
-  world.add(shuttle);
+  const skirtRim = new THREE.Mesh(
+    new THREE.TorusGeometry(0.96, 0.035, 10, 64),
+    new THREE.MeshBasicMaterial({ color: 0x6dffd0, transparent: true, opacity: 0.9 })
+  );
+  skirtRim.position.y = 1.91;
+  skirtRim.rotation.x = Math.PI / 2;
+  shuttle.add(skirtRim);
+  shuttle.position.set(4.3, -0.85, 0.55);
+  shuttle.rotation.set(0.42, -0.52, 0.74);
+  shuttle.scale.setScalar(coarsePointer ? 1.48 : 1.85);
+  heroObjects.add(shuttle);
+
+  const racket = new THREE.Group();
+  const racketFrameMaterial = new THREE.MeshPhysicalMaterial({
+    color: 0x075fb4,
+    roughness: 0.2,
+    metalness: 0.28,
+    clearcoat: 1,
+    clearcoatRoughness: 0.12
+  });
+  const racketHead = new THREE.Mesh(new THREE.TorusGeometry(1.35, 0.095, 14, 72), racketFrameMaterial);
+  racketHead.scale.y = 1.18;
+  racket.add(racketHead);
+
+  const stringPoints = [];
+  for (let i = -5; i <= 5; i += 1) {
+    const x = i * 0.205;
+    const halfY = Math.sqrt(Math.max(0, 1.25 * 1.25 - x * x)) * 1.18;
+    stringPoints.push(x, -halfY, 0, x, halfY, 0);
+    const y = i * 0.235;
+    const halfX = Math.sqrt(Math.max(0, 1.22 * 1.22 - (y / 1.18) ** 2));
+    stringPoints.push(-halfX, y, 0, halfX, y, 0);
+  }
+  const stringsGeometry = new THREE.BufferGeometry();
+  stringsGeometry.setAttribute('position', new THREE.Float32BufferAttribute(stringPoints, 3));
+  const strings = new THREE.LineSegments(
+    stringsGeometry,
+    new THREE.LineBasicMaterial({ color: 0xdffeff, transparent: true, opacity: 0.46 })
+  );
+  racket.add(strings);
+
+  const shaft = new THREE.Mesh(new THREE.CylinderGeometry(0.055, 0.055, 1.85, 12), racketFrameMaterial);
+  shaft.position.y = -2.3;
+  racket.add(shaft);
+  const grip = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.14, 0.17, 1.25, 14),
+    new THREE.MeshPhysicalMaterial({ color: 0x13a86c, roughness: 0.48, clearcoat: 0.6 })
+  );
+  grip.position.y = -3.72;
+  racket.add(grip);
+  racket.position.set(-4.4, 0.35, -0.2);
+  racket.rotation.set(-0.18, 0.32, -0.42);
+  racket.scale.setScalar(coarsePointer ? 0.82 : 1.04);
+  heroObjects.add(racket);
+
+  const haloMaterial = new THREE.MeshBasicMaterial({
+    color: 0xcaffee,
+    transparent: true,
+    opacity: 0.42,
+    depthWrite: false
+  });
+  const halo = new THREE.Mesh(new THREE.TorusGeometry(4.7, 0.028, 8, 128), haloMaterial);
+  halo.scale.y = 0.42;
+  halo.rotation.set(0.55, -0.18, -0.13);
+  halo.position.z = -1.8;
+  heroObjects.add(halo);
+  const haloTwo = new THREE.Mesh(new THREE.TorusGeometry(3.55, 0.022, 8, 96), haloMaterial.clone());
+  haloTwo.material.color.setHex(0x9cd4ff);
+  haloTwo.material.opacity = 0.32;
+  haloTwo.scale.y = 0.5;
+  haloTwo.rotation.set(-0.5, 0.22, 0.3);
+  haloTwo.position.z = -2.6;
+  heroObjects.add(haloTwo);
 
   const windGeometry = new THREE.BoxGeometry(0.018, 0.018, 1.6);
   const windMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.36 });
@@ -198,14 +295,21 @@ function initIntroScene(THREE, context) {
     if (!reducedMotion.matches) {
       pointer.x += (target.x - pointer.x) * 0.035;
       pointer.y += (target.y - pointer.y) * 0.035;
-      camera.position.x = pointer.x * 0.42;
-      camera.position.y = 0.4 - pointer.y * 0.26;
-      camera.position.z = 11.5 - exitProgress * 4.6;
-      world.rotation.y = pointer.x * 0.025;
-      world.rotation.x = pointer.y * 0.012;
-      shuttle.position.y = -1.1 + Math.sin(elapsed * 1.2) * 0.18;
-      shuttle.rotation.y = -0.35 + elapsed * 0.18 * exitSpeed;
-      shuttle.rotation.z = 0.82 + Math.sin(elapsed * 0.7) * 0.06;
+      camera.position.x = pointer.x * 0.72;
+      camera.position.y = 0.35 - pointer.y * 0.48;
+      camera.position.z = 12.6 - exitProgress * 6.2;
+      world.rotation.y = pointer.x * 0.075;
+      world.rotation.x = pointer.y * 0.042;
+      heroObjects.position.z = exitProgress * 2.8;
+      heroObjects.rotation.z = pointer.x * -0.025;
+      shuttle.position.y = -0.85 + Math.sin(elapsed * 1.15) * 0.28;
+      shuttle.rotation.y = -0.52 + elapsed * 0.32 * exitSpeed + pointer.x * 0.18;
+      shuttle.rotation.z = 0.74 + Math.sin(elapsed * 0.72) * 0.09;
+      racket.position.y = 0.35 + Math.sin(elapsed * 0.78 + 1.2) * 0.22;
+      racket.rotation.y = 0.32 + Math.sin(elapsed * 0.55) * 0.16 - pointer.x * 0.14;
+      racket.rotation.x = -0.18 + pointer.y * 0.12;
+      halo.rotation.z = -0.13 + elapsed * 0.055;
+      haloTwo.rotation.z = 0.3 - elapsed * 0.07;
       cloudField.children.forEach((cloud) => {
         cloud.position.z += 0.004 * cloud.userData.speed * exitSpeed;
         if (cloud.position.z > 9) cloud.position.z = -15;
@@ -221,7 +325,7 @@ function initIntroScene(THREE, context) {
       wind.instanceMatrix.needsUpdate = true;
     }
 
-    camera.lookAt(0, 0, -1.5);
+    camera.lookAt(pointer.x * -0.15, pointer.y * 0.08, -1.3);
     renderer.render(scene, camera);
     frame = requestAnimationFrame(render);
   };

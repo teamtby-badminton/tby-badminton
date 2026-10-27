@@ -3,14 +3,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="theme-color" content="#061b33" />
+  <meta name="theme-color" content="#ffffff" />
   <title>TBY · Đăng ký slot cầu lông</title>
   <meta name="description" content="Trang đăng ký slot vãng lai TBY" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="./styles.css?v=original-mascot-15" />
-  <link rel="stylesheet" href="./theme.css?v=original-mascot-15" />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Outfit:wght@500;600;700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./styles.css?v=modern-2" />
+  <link rel="stylesheet" href="./theme.css?v=performance-1" />
 
   <script>
     window.addEventListener('DOMContentLoaded', function(){
@@ -41,33 +41,90 @@
 
   <main id="top">
     <section class="hero" id="heroSection">
+      <div id="hero3d" class="hero-3d-layer" aria-hidden="true"></div>
       <div class="container hero-content" id="heroInner">
         <div class="hero-copy">
-        <p class="hero-tag">TBY BADMINTON CLUB · TRAIN / BATTLE / YIELD</p>
-        <h1 id="heroTitle">Chơi hết mình.<br/>Kết nối bền lâu.</h1>
-        <p id="heroSubtitle" class="hero-sub">Đăng ký slot vãng lai nhanh, xem chỗ trống theo thời gian thực và nhận thông tin kèo ngay trên điện thoại.</p>
-        <div class="hero-actions">
-          <a class="btn btn-primary btn-lg" href="#keo">Tìm kèo của bạn ↗</a>
-          <a class="hero-secondary" href="#tra-cuu-dang-ky">Tra cứu đăng ký →</a>
-        </div>
-        <p class="hero-footnote">CÙNG RA SÂN. CÙNG TIẾN BỘ.</p>
+          <p class="hero-tag">TBY BADMINTON CLUB · TRAIN / BATTLE / YIELD</p>
+          <h1 id="heroTitle">Chơi hết mình.<br/><span class="cyber-glow-text">Kết nối bền lâu.</span></h1>
+          <p id="heroSubtitle" class="hero-sub">Đăng ký slot vãng lai nhanh, xem chỗ trống theo thời gian thực và nhận thông tin kèo ngay trên điện thoại.</p>
+          <div class="hero-actions">
+            <a class="btn btn-primary btn-lg" href="#keo">🏸 Giữ slot trên sân ↗</a>
+            <a class="hero-secondary" href="#tra-cuu-dang-ky">🔎 Tra cứu ra sân →</a>
+          </div>
+          <div class="hero-stats">
+            <div class="hero-stat-pill"><span class="stat-dot"></span>Slot cập nhật tức thì</div>
+            <div class="hero-stat-pill">🏸 Ghép kèo công bằng</div>
+            <div class="hero-stat-pill">✨ Nam & Nữ mọi trình độ</div>
+          </div>
+          <p class="hero-footnote">CÙNG RA SÂN. CÙNG TIẾN BỘ.</p>
         </div>
         <div class="hero-art" aria-hidden="true">
-          <div class="court-panel">
-            <div class="court-topline"><span>TEAM TBY</span><span>BADMINTON CLUB</span></div>
-            <div class="court-lines"><i class="court-center"></i><i class="court-net"></i><span class="court-word">TBY</span></div>
+          <div class="hero-match-preview">
+            <div class="match-preview-glow"></div>
+            <div class="match-preview-head">
+              <span class="match-badge-live"><span class="pulse-ring"></span>ĐANG MỞ ĐĂNG KÝ</span>
+              <span class="match-badge-level">Yếu+ → TB-</span>
+            </div>
+            <div class="match-preview-venue">
+              <div class="venue-icon">🏸</div>
+              <div>
+                <strong>Kèo Giao Lưu Tối Nay</strong>
+                <span>Dragon Prime Gym & Badminton</span>
+              </div>
+            </div>
+            <div class="match-preview-details">
+              <div class="detail-item">
+                <span class="detail-label">KHUNG GIỜ</span>
+                <span class="detail-val">19:00 – 21:00</span>
+              </div>
+              <div class="detail-item">
+                <span class="detail-label">CHI PHÍ</span>
+                <span class="detail-val">Nam 65k · Nữ 55k</span>
+              </div>
+            </div>
+            <div class="match-preview-slot">
+              <div class="slot-bar-head">
+                <span>TÌNH TRẠNG CHỖ</span>
+                <strong>Còn 3 / 10 slot trống</strong>
+              </div>
+              <div class="slot-bar-track">
+                <div class="slot-bar-fill" style="width: 70%;"></div>
+              </div>
+            </div>
+            <div class="match-preview-footer">
+              <div class="preview-avatars">
+                <span class="avatar-chip">🏸 Minh</span>
+                <span class="avatar-chip">🏸 Tuấn</span>
+                <span class="avatar-chip">🏸 Mai</span>
+                <span class="avatar-more">+5</span>
+              </div>
+              <a href="#keo" class="btn-preview-cta">Giữ chỗ ngay ↗</a>
+            </div>
           </div>
-          <div class="art-tag">Good players. Better friends.<span>Hẹn nhau trên sân cầu.</span></div>
+          <div class="hero-floating-badge badge-1">
+            <span class="badge-icon">⚡</span>
+            <div>
+              <strong>Slot vãng lai</strong>
+              <small>Xác nhận tức thì</small>
+            </div>
+          </div>
+          <div class="hero-floating-badge badge-2">
+            <span class="badge-icon">🤝</span>
+            <div>
+              <strong>100% Fair-play</strong>
+              <small>Cùng tiến bộ</small>
+            </div>
+          </div>
         </div>
       </div>
       
     </section>
 
-    <div class="club-strip"><span>TRAIN WITH PURPOSE</span><span>✦</span><span>BATTLE WITH PASSION</span><span>✦</span><span>YIELD TOGETHER</span></div>
+    <div class="club-strip"><span>TBY BADMINTON CLUB</span><span>•</span><span>TRAIN WITH PURPOSE</span><span>•</span><span>BATTLE WITH PASSION</span><span>•</span><span>YIELD TOGETHER</span><span>•</span><span>100% FAIR PLAY</span><span>•</span><span>BETTER FRIENDS</span></div>
 
     <section class="container section" id="keo">
       <div class="section-head">
-        <div><span class="section-kicker">01 / LỊCH RA SÂN</span><h2 data-split>Kèo sắp tới</h2><p class="section-sub">Chọn kèo phù hợp. Giữ một chỗ trên sân.</p></div>
+        <div><span class="section-kicker">01 / LỊCH RA SÂN</span><h2 data-split>Kèo sắp tới</h2><p class="section-sub">Chọn kèo phù hợp và giữ chỗ trên sân chỉ trong vài bước.</p></div>
         <button id="refreshBtn" class="btn btn-ghost">↻ Cập nhật</button>
       </div>
       <div id="events" class="event-grid"><div class="empty-card">Đang tải lịch kèo…</div></div>
@@ -76,7 +133,7 @@
     <section class="container section registration-lookup-section" id="tra-cuu-dang-ky">
       <div class="section-head">
         <div>
-          <span class="section-kicker">02 / ĐĂNG KÝ CỦA BẠN</span><h2 data-split>Hẹn ở sân nào?</h2>
+          <span class="section-kicker">02 / TRA CỨU ĐĂNG KÝ</span><h2 data-split>Hẹn ở sân nào?</h2>
           <p class="section-sub">Nhập đúng tên hoặc SĐT/Zalo đã dùng khi đăng ký.</p>
         </div>
       </div>
@@ -91,7 +148,7 @@
     </section>
 
     <section class="container section video-section" id="video">
-      <div class="section-head"><div><span class="section-kicker">03 / KHOẢNH KHẮC TBY</span><h2 data-split>Nhịp cầu. Nhịp vui.</h2><p class="section-sub">Những pha cầu và câu chuyện cùng đồng đội.</p></div></div>
+      <div class="section-head"><div><span class="section-kicker">03 / KHOẢNH KHẮC TBY</span><h2 data-split>Nhịp cầu. Nhịp vui.</h2><p class="section-sub">Những pha cầu đẹp và câu chuyện cùng đồng đội.</p></div></div>
       <div id="videoFeed" class="video-feed"><div class="empty-card">Đang tải video…</div></div>
     </section>
 
@@ -102,7 +159,7 @@
 
     <section class="container section follow" id="lien-he">
       <div class="follow-inner">
-        <div><span class="section-kicker">KẾT NỐI CÙNG TEAM TBY</span><h2 class="follow-title" data-split>Hơn một trận cầu.<br>Một đội, một niềm vui.</h2></div>
+        <div><span class="section-kicker">KẾT NỐI TEAM TBY</span><h2 class="follow-title" data-split>Hơn một trận cầu.<br>Một đội, một niềm vui.</h2></div>
         <div id="socialLinks" class="social-links follow-links"></div>
       </div>
     </section>
@@ -129,11 +186,6 @@
         <label class="full">Ghi chú<textarea id="note" rows="3" maxlength="200" placeholder="VD: đi cùng bạn, muốn đánh cặp…"></textarea></label>
       </div>
       <p id="registerMsg" class="form-msg"></p>
-<h3>Thông tin sân của bạn</h3>
-          <div id="registeredCourtInfoBody"></div>
-          <small>Hãy lưu lại thông tin này để đến đúng sân.</small>
-        </div>
-
       <button id="submitRegister" class="btn btn-primary full-btn" type="submit">🏸 Đăng ký slot</button>
     </form>
   </dialog>
@@ -359,6 +411,7 @@
   </dialog>
 
   <script src="./config.js"></script>
+  <script type="module" src="./hero-3d.js?v=1"></script>
   <script type="module" src="./app.js?v=levels-r23"></script>
   <script defer src="./motion.js?v=original-mascot-15"></script>
   <script defer src="./mascot-scene-r21.js"></script>

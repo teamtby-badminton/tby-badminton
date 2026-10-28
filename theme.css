@@ -3649,6 +3649,12 @@ body.intro-active {
     rotateY(0deg);
 }
 
+/* Interactive social links must keep a one-to-one visual and hit-test box. */
+.page-depth-ready .follow-inner,
+.page-depth-ready .follow-inner > * {
+  transform: none !important;
+}
+
 .page-depth-ready .event-card .event-hero,
 .page-depth-ready .lookup-card > *,
 .page-depth-ready .video-card .video-frame,

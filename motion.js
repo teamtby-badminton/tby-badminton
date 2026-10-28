@@ -91,7 +91,6 @@
     '.lookup-results > .lookup-result-card',
     '#videoFeed > .video-card',
     '#rulesList > article',
-    '.follow-inner',
     'footer .footer-inner'
   ].join(',');
 

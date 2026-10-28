@@ -1754,6 +1754,14 @@ button, input, select, textarea, .btn {
   transition: all 0.25s ease;
 }
 
+/* Do not visually move the anchor itself: its painted box must equal its hit box. */
+.follow-links a,
+.follow-links a:hover,
+.follow-links a:focus-visible {
+  transform: none !important;
+  translate: none !important;
+}
+
 .follow-links a:hover {
   background: var(--primary-gradient) !important;
   border-color: #00f59b !important;

@@ -41,6 +41,18 @@ function mapsUrl(value){
     return raw;
   }catch{return '';}
 }
+
+function externalUrl(value){
+  let raw=String(value||'').trim();
+  if(!raw)return '';
+  if(raw.startsWith('//'))raw=`https:${raw}`;
+  else if(!/^[a-z][a-z\d+.-]*:\/\//i.test(raw))raw=`https://${raw}`;
+  try{
+    const url=new URL(raw);
+    if(!['https:','http:'].includes(url.protocol)||url.username||url.password)return '';
+    return url.href;
+  }catch{return '';}
+}
 function mapsButton(value){
   const url=mapsUrl(value);
   return url?`<a class="btn btn-outline btn-sm" href="${esc(url)}" target="_blank" rel="noopener noreferrer">🗺️ Mở Google Maps</a>`:'';
@@ -60,7 +72,9 @@ function applySettings(s){
   $('#morphStage').style.setProperty('--bgimg',s.background_image_url?`url("${s.background_image_url}")`:'none');
   const rules=(s.rules_text||fallbackSettings.rules_text).split(/\r?\n/).map(x=>x.trim()).filter(Boolean);
   $('#rulesList').innerHTML=(rules.length?rules:['Nội quy đang được cập nhật.']).map((r,i)=>`<article><b>${String(i+1).padStart(2,'0')}</b><p>${esc(r)}</p></article>`).join('');
-  const links=[['TikTok',s.tiktok_url,'tiktok'],['YouTube',s.youtube_url,'youtube'],['Facebook',s.facebook_url,'facebook'],['Zalo',s.zalo_url,'zalo']].filter(x=>x[1]);
+  const links=[['TikTok',s.tiktok_url,'tiktok'],['YouTube',s.youtube_url,'youtube'],['Facebook',s.facebook_url,'facebook'],['Zalo',s.zalo_url,'zalo']]
+    .map(([name,url,key])=>[name,externalUrl(url),key])
+    .filter(([,url])=>url);
   $('#socialLinks').innerHTML=links.length?links.map(([name,url,key])=>`<a data-social="${key}" href="${esc(url)}" target="_blank" rel="noopener noreferrer">${name}</a>`).join(''):'<span class="muted">Các kênh mạng xã hội đang cập nhật.</span>';
 }
 
@@ -705,19 +719,19 @@ function tiktokId(url=''){
   return m?m[1]:'';
 }
 function externalVideoMarkup(v){
-  const url=v.source_url||v.video_url||'';
+  const url=externalUrl(v.source_url||v.video_url||'');
   const type=v.source_type&&v.source_type!=='upload'?v.source_type:getVideoPlatform(url);
 
   if(type==='youtube'){
     const id=youtubeId(url);
-    if(!id) return `<a class="video-link-fallback" href="${esc(url)}" target="_blank" rel="noopener">Mở video YouTube ↗</a>`;
+    if(!id) return `<a class="video-link-fallback" href="${esc(url)}" target="_blank" rel="noopener noreferrer">Mở video YouTube ↗</a>`;
     const src=`https://www.youtube-nocookie.com/embed/${encodeURIComponent(id)}?autoplay=1&mute=1&loop=1&playlist=${encodeURIComponent(id)}&playsinline=1&controls=1&rel=0`;
     return `<iframe class="tby-embed tby-external-video" data-src="${esc(src)}" title="${esc(v.title||'Video TBY')}" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen loading="lazy"></iframe>`;
   }
 
   if(type==='tiktok'){
     const id=tiktokId(url);
-    if(!id) return `<a class="video-link-fallback" href="${esc(url)}" target="_blank" rel="noopener">Mở video TikTok ↗</a>`;
+    if(!id) return `<a class="video-link-fallback" href="${esc(url)}" target="_blank" rel="noopener noreferrer">Mở video TikTok ↗</a>`;
     const src=`https://www.tiktok.com/player/v1/${encodeURIComponent(id)}?autoplay=1&loop=1&music_info=1&description=1`;
     return `<iframe class="tby-embed tby-external-video" data-src="${esc(src)}" title="${esc(v.title||'Video TBY')}" allow="autoplay; encrypted-media" allowfullscreen loading="lazy"></iframe>`;
   }
@@ -727,7 +741,7 @@ function externalVideoMarkup(v){
     return `<iframe class="tby-embed tby-external-video" data-src="${esc(src)}" title="${esc(v.title||'Video TBY')}" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen loading="lazy"></iframe>`;
   }
 
-  return `<a class="video-link-fallback" href="${esc(url)}" target="_blank" rel="noopener">Mở video ↗</a>`;
+  return `<a class="video-link-fallback" href="${esc(url)}" target="_blank" rel="noopener noreferrer">Mở video ↗</a>`;
 }
 
 function setupVideoAutoplay(){

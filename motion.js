@@ -171,10 +171,7 @@
   const update = (time = 0) => {
     frame = 0;
     if (document.hidden || reducedMotion.matches) return;
-    if (coarsePointer.matches && time - lastFrameTime < 30) {
-      frame = requestAnimationFrame(update);
-      return;
-    }
+    if (coarsePointer.matches && time - lastFrameTime < 30) return;
     lastFrameTime = time;
     const viewport = Math.max(1, window.innerHeight);
     const mobile = coarsePointer.matches || window.innerWidth < 769;

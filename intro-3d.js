@@ -274,6 +274,7 @@ function initIntroScene(THREE, context) {
   let disposed = false;
   let exitProgress = 0;
   let pageVisible = !document.hidden;
+  let lastRenderTime = 0;
 
   const resize = () => {
     const width = Math.max(1, window.innerWidth);
@@ -310,11 +311,16 @@ function initIntroScene(THREE, context) {
     target.y = (event.clientY / window.innerHeight - 0.5) * 2;
   };
 
-  const render = () => {
+  const render = (frameTime = 0) => {
     if (disposed || !pageVisible) {
       frame = 0;
       return;
     }
+    if (coarsePointer && frameTime - lastRenderTime < 32) {
+      frame = requestAnimationFrame(render);
+      return;
+    }
+    lastRenderTime = frameTime;
     const elapsed = clock.getElapsedTime();
     const exitSpeed = isExiting() ? 5.2 : 1;
     if (isExiting()) exitProgress = Math.min(1, exitProgress + 0.025);

@@ -1730,9 +1730,18 @@ button, input, select, textarea, .btn {
   flex-wrap: wrap;
   gap: 12px;
   max-width: 460px;
+  position: relative;
+  z-index: 3;
 }
 
 .follow-links a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  z-index: 4;
+  pointer-events: auto;
+  touch-action: manipulation;
   background: rgba(255, 255, 255, 0.05) !important;
   backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.15) !important;
@@ -3625,7 +3634,7 @@ body.intro-active {
 }
 
 .page-depth-ready .motion-depth-card {
-  will-change: transform;
+  will-change: auto;
 }
 
 @media (hover: hover) and (pointer: fine) {
@@ -3699,6 +3708,12 @@ body.intro-active {
 @media (max-width: 768px) {
   :root { --mobile-header-height: 64px; }
 
+  html,
+  body {
+    width: 100%;
+    max-width: 100vw;
+    overflow-x: clip;
+  }
   body { background-attachment: scroll !important; }
   .topbar {
     height: var(--mobile-header-height);
@@ -3714,13 +3729,17 @@ body.intro-active {
     height: 255svh;
     min-height: 0;
   }
+  .tby-intro { min-height: 100dvh; }
   .hero-sticky {
     top: var(--mobile-header-height);
     height: calc(100svh - var(--mobile-header-height));
-    min-height: 0;
+    min-height: calc(100svh - var(--mobile-header-height));
   }
   @supports (height: 100dvh) {
-    .hero-sticky { height: calc(100dvh - var(--mobile-header-height)); }
+    .hero-sticky {
+      height: calc(100dvh - var(--mobile-header-height));
+      min-height: calc(100dvh - var(--mobile-header-height));
+    }
   }
   .hero-sticky .hero-3d-layer { opacity: .56; }
   .hero-content {
@@ -3851,6 +3870,12 @@ body.intro-active {
 
   .page-depth-ready .motion-depth {
     transition-duration: .12s;
+  }
+  /* Keep social hit areas aligned with their painted buttons on touch browsers. */
+  .page-depth-ready .follow-inner,
+  .page-depth-ready .follow-inner > * {
+    transform: none !important;
+    transition: none !important;
   }
   .page-depth-ready .event-card .event-hero,
   .page-depth-ready .lookup-card > *,
